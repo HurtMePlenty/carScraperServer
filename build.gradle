@@ -1,0 +1,89 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'com.bmuschko.tomcat'
+
+repositories {
+    mavenCentral()
+
+}
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'com.bmuschko:gradle-tomcat-plugin:2.2.2'
+    }
+}
+
+dependencies {
+    def tomcatVersion = '8.0.27'
+
+    tomcat "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
+            "org.apache.tomcat.embed:tomcat-embed-logging-juli:${tomcatVersion}",
+            "org.apache.tomcat.embed:tomcat-embed-jasper:${tomcatVersion}",
+            "jstl:jstl:1.2"
+
+    compile 'org.jsoup:jsoup:1.7.2'
+    compile 'org.apache.commons:commons-lang3:3.4'
+    compile 'org.seleniumhq.selenium:selenium-java:2.47.2'
+    compile 'org.seleniumhq.selenium:selenium-support:2.0a7'
+    compile 'com.codeborne:phantomjsdriver:1.2.1'
+
+
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+
+    compile 'org.slf4j:slf4j-simple:1.7.12'
+    compile 'com.madgag.spongycastle:prov:1.51.0.0'
+    compile 'com.madgag.spongycastle:pkix:1.51.0.0'
+
+
+    compile 'javax.servlet:javax.servlet-api:3.1.0'
+    compile 'org.springframework:spring-core:4.1.1.RELEASE'
+    compile 'org.springframework:spring-web:4.1.1.RELEASE'
+    //compile 'org.springframework:servlet-api:4.1.1.RELEASE'
+    //compile 'org.springframework:jsp-api:4.1.1.RELEASE'
+    compile 'org.springframework:spring-webmvc:4.1.1.RELEASE'
+    compile 'org.springframework:spring-test:4.1.1.RELEASE'
+    compile 'junit:junit:4.11'
+    compile 'jstl:jstl:1.2'
+
+    compile 'org.springframework.data:spring-data-mongodb:1.8.0.RELEASE'
+
+    compile 'org.codehaus.jackson:jackson-mapper-asl:1.9.13'
+
+
+
+}
+
+tomcat {
+    contextPath = '/'
+}
+
+task tomcatDebug {
+    // Create a new task tomcatDebug, add a description and add it to the same group as tomcatRun
+    description "Starting Tomcat with debugger enabled on port 5008."
+    group "web application"
+} << {
+
+    org.gradle.tooling.ProjectConnection conn = org.gradle.tooling.GradleConnector.newConnector()
+            .forProjectDirectory(new File("."))
+            .connect();
+
+    try {
+
+        org.gradle.tooling.model.build.BuildEnvironment env = conn.getModel(org.gradle.tooling.model.build.BuildEnvironment.class)
+        org.gradle.tooling.BuildLauncher build = conn.newBuild();
+
+        build.forTasks("tomcatRun")
+        // Enable debug via jvm arguments and append JVM arguments of the currently running vm (except -D).
+        build.setJvmArguments("-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5008", *env.java.jvmArguments)
+
+        // Run tomcatRun in the new JVM with debug parameters
+        build.run()
+
+    } finally {
+        conn.close();
+    }
+}
