@@ -1,0 +1,44 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mongo="http://www.springframework.org/schema/data/mongo"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context-3.0.xsd
+       http://www.springframework.org/schema/data/mongo
+       http://www.springframework.org/schema/data/mongo/spring-mongo-1.8.xsd">
+
+    <context:component-scan base-package="carScraperServer"/>
+
+    <context:property-placeholder location="/WEB-INF/config.properties"/>
+
+    <mongo:repositories base-package="carScraperServer.repositories"/>
+
+    <mongo:mongo host="${mongodbHost}" port="${mongodbPort}"/>
+
+    <mongo:db-factory
+            dbname="${mongodbBaseName}"
+            mongo-ref="mongo"/>
+
+    <bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
+        <constructor-arg name="mongoDbFactory" ref="mongoDbFactory"/>
+    </bean>
+
+    <bean id="carsComScrapeService" class="carScraperServer.services.CarsComScrapeService">
+        <property name="phantomBinaryPath" value="${phantomBinaryPath}"/>
+        <property name="screenshotsFolder" value="${screenshotsFolder}"/>
+        <property name="phantomProxy" value="${phantomProxy}"/>
+        <property name="phantomProxyType" value="${phantomProxyType}"/>
+    </bean>
+
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/pages/"/>
+        <property name="suffix" value=".jsp"/>
+    </bean>
+
+    <bean id="torPageLoader" class="carScraperServer.scrapeEngine.TorPageLoader">
+        <property name="requestsPerIP" value="${torRequestsPerIP}"/>
+        <property name="connectionTimeout" value="${torConnectionTimeout}"/>
+    </bean>
+</beans>
