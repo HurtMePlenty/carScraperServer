@@ -10,6 +10,7 @@ import carScraperServer.scrapeEngine.SeleniumHelper;
 import carScraperServer.scrapeEngine.TorProxyService;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.eclipse.jetty.util.ConcurrentHashSet;
 import org.openqa.selenium.*;
 import org.openqa.selenium.remote.UnreachableBrowserException;
 import org.openqa.selenium.support.ui.Select;
@@ -23,9 +24,9 @@ import org.springframework.stereotype.Component;
 import javax.servlet.ServletContext;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
@@ -51,10 +52,10 @@ public class CarsComScrapeService {
 
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(CarsComScrapeService.class);
 
-    private final int maxThreads = 1;
-    private Semaphore semaphore = new Semaphore(maxThreads);
+    private int maxThreads;
+    private Semaphore semaphore;
     ExecutorService pageLoadAsyncExecutor;
-    ExecutorService startAsyncExecutor = Executors.newFixedThreadPool(maxThreads);
+    ExecutorService startAsyncExecutor = Executors.newSingleThreadExecutor();
 
     private String screenshotsFolder;
     private String phantomProxy;
@@ -224,6 +225,7 @@ public class CarsComScrapeService {
                     //sometimes phantomjs can just crush so we need to reinitialize it.
                     if (wasPreviousDriverSuccessful) { //reinitialize only if previous run was successful. If not it might
                         //mean that phantomjs binary wasn't found and we should fail with exception
+                        PhantomInitializer.instance.killDriver();
                         driver = PhantomInitializer.instance.getDriver(phantomProxy, phantomProxyType, phantomBinaryFullPath);
                     } else {
                         throw new RuntimeException(e);
@@ -243,7 +245,7 @@ public class CarsComScrapeService {
     }
 
     private int processSearchResultPages(WebDriver driver, String selectedMake, String selectedModel) throws InterruptedException, IOException {
-        List<ResultItem> loadedItems = new ArrayList<>();
+        Set<ResultItem> loadedItems = new ConcurrentHashSet<>();
         final int[] totalLoadedForMakeModel = {0};
 
         //each cycle will process one search result page
@@ -258,7 +260,6 @@ public class CarsComScrapeService {
                     continue;
                 }
 
-
                 //if fact with 1 thread there is no need for synchronization
                 //use semaphore to prevent queueing in the executor.
                 //if implement more threads need to make Tor tunnel a bit more stable
@@ -270,6 +271,7 @@ public class CarsComScrapeService {
                         loadedItems.add(resultItem);
                         totalItems++;
                         totalLoadedForMakeModel[0]++;
+                        //System.out.println(String.format("loaded: %d", totalItems));
                     }
                     semaphore.release();
                 });
@@ -356,6 +358,13 @@ public class CarsComScrapeService {
         } else {
             this.screenshotsFolder = servletContext.getRealPath("/") + File.separator + screenshotsFolder;
         }
+    }
+
+    @Required
+    public void setMaxThreads(int maxThreads) {
+        this.maxThreads = maxThreads;
+        semaphore = new Semaphore(maxThreads);
+        pageLoadAsyncExecutor = Executors.newFixedThreadPool(maxThreads);
     }
 
     public int getTotalItems() {

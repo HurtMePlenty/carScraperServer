@@ -3,6 +3,7 @@ package carScraperServer.scrapeEngine;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.*;
@@ -11,15 +12,24 @@ import java.net.*;
 public class TorPageLoader {
 
     private int requestsPerIP;
-    private int requestsMade;
+    private volatile int requestsMade;
     private int connectionTimeout;
+
+    private Object lock = new Object();
+
+    @PostConstruct
+    private void init() {
+        TorProxyService.instance.establishTor();
+    }
 
 
     public String getPage(String urlString) {
         try {
-            if (requestsMade++ > requestsPerIP) {
-                TorProxyService.instance.establishTor();
-                requestsMade = 0;
+            synchronized (lock) {
+                if (requestsMade++ > requestsPerIP) {
+                    TorProxyService.instance.establishTor();
+                    requestsMade = 0;
+                }
             }
 
             String proxyIp = TorProxyService.instance.getProxyIp();

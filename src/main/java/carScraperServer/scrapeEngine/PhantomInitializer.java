@@ -2,6 +2,7 @@ package carScraperServer.scrapeEngine;
 
 
 import org.apache.commons.lang3.StringUtils;
+import org.openqa.selenium.Dimension;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.phantomjs.PhantomJSDriverService;
@@ -16,6 +17,11 @@ public enum PhantomInitializer {
 
 
     private WebDriver driver;
+
+    //If phantomjs process died we should just remove our driver because it's nothing to quit now, process already died
+    public void killDriver() {
+        driver = null;
+    }
 
     public WebDriver getDriver(String proxy, String phantomProxyType, String phantomBinaryPath) {
         closeDriver();
@@ -34,10 +40,11 @@ public enum PhantomInitializer {
                 PhantomJSDriverService.PHANTOMJS_CLI_ARGS, cliArgsCap);
 
         capabilities.setCapability("phantomjs.binary.path", phantomBinaryPath);
-        capabilities.setCapability("phantomjs.page.settings.userAgent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2227.1 Safari/537.36");
         capabilities.setJavascriptEnabled(true);
+
         driver = new PhantomJSDriver(capabilities);
         driver.manage().timeouts().setScriptTimeout(20000, TimeUnit.MILLISECONDS);
+
 
         ((PhantomJSDriver) driver).executePhantomJS(String.format("var page = this;\n" +
                 "page.settings.resourceTimeout = 7000;" +
@@ -66,6 +73,13 @@ public enum PhantomInitializer {
                 "})();\n" +
                 "    });\n" +
                 "};", 1440, 900, "MacIntel"));
+
+        driver.manage().window().setSize(new Dimension(1440, 900));
+        driver.manage().deleteAllCookies();
+
+        if (driver.manage().getCookies().size() > 0) {
+            throw new RuntimeException("Cookies are not empty");
+        }
 
 
         return driver;

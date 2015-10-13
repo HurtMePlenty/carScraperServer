@@ -30,6 +30,7 @@
         <property name="screenshotsFolder" value="${screenshotsFolder}"/>
         <property name="phantomProxy" value="${phantomProxy}"/>
         <property name="phantomProxyType" value="${phantomProxyType}"/>
+        <property name="maxThreads" value="${torThreads}"/>
     </bean>
 
     <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
