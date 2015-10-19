@@ -24,13 +24,11 @@ import org.springframework.stereotype.Component;
 import javax.servlet.ServletContext;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 @Component
 public class CarsComScrapeService {
@@ -265,16 +263,20 @@ public class CarsComScrapeService {
                 //if implement more threads need to make Tor tunnel a bit more stable
                 //and lower the timeout
                 semaphore.acquire();
-                pageLoadAsyncExecutor.execute(() -> {
+
+                Callable<Object> callable = () -> {
                     ResultItem resultItem = carPageProcessor.process(url);
                     if (resultItem != null) {
                         loadedItems.add(resultItem);
                         totalItems++;
                         totalLoadedForMakeModel[0]++;
-                        //System.out.println(String.format("loaded: %d", totalItems));
+                        System.out.println(String.format("loaded: %d", totalItems));
                     }
                     semaphore.release();
-                });
+                    return null;
+                };
+
+                pageLoadAsyncExecutor.invokeAll(Arrays.asList(callable), 20000, TimeUnit.MILLISECONDS);
 
                 if (shouldStop) {
                     break;
@@ -364,7 +366,6 @@ public class CarsComScrapeService {
     public void setMaxThreads(int maxThreads) {
         this.maxThreads = maxThreads;
         semaphore = new Semaphore(maxThreads);
-        pageLoadAsyncExecutor = Executors.newFixedThreadPool(maxThreads);
     }
 
     public int getTotalItems() {

@@ -1,6 +1,7 @@
 package carScraperServer.scrapeEngine;
 
-import org.silvertunnel_ng.netlib.tool.NetlibProxy;
+import org.silvertunnel_ng.netlib.api.NetFactory;
+import org.silvertunnel_ng.netlib.tool.CustomNetlibProxy;
 
 public enum TorProxyService {
     instance;
@@ -13,8 +14,8 @@ public enum TorProxyService {
     public void establishTor() {
 
         try {
-            if (NetlibProxy.isStarted()) {
-                NetlibProxy.stop();
+            if (CustomNetlibProxy.isStarted()) {
+                CustomNetlibProxy.stop();
                 synchronized (lock) {
                     while (!isFinished) {
                         lock.wait();
@@ -22,11 +23,13 @@ public enum TorProxyService {
                 }
             }
 
+            //remove previous Tor net layer
+            NetFactory.getInstance().clearRegisteredNetLayers();
 
             Thread thread = new Thread(() -> {
                 isFinished = false;
                 String[] arguments = new String[]{localProxyAddress, "socks_over_tor_over_tls_over_tcpip"};
-                NetlibProxy.start(arguments);
+                CustomNetlibProxy.start(arguments);
                 synchronized (lock) {
                     isFinished = true;
                     lock.notifyAll();
@@ -41,25 +44,10 @@ public enum TorProxyService {
     }
 
     public void stopTor() {
-        if (NetlibProxy.isStarted()) {
-            NetlibProxy.stop();
+        if (CustomNetlibProxy.isStarted()) {
+            CustomNetlibProxy.stop();
         }
     }
-
-    /*private void establishTorConnection(String ip, String id) {
-        try {
-            final String listenAddressPortArg = ip;
-            final TcpipNetAddress localListenAddress = new TcpipNetAddress(
-                    listenAddressPortArg);
-
-            // open server port
-            netServerSocket = NetFactory.getInstance()
-                    .getNetLayerById(NetLayerIDs.TCPIP)
-                    .createNetServerSocket(null, localListenAddress);
-        }catch (Exception e){
-            throw new RuntimeException(e);
-        }
-    }*/
 
     public String getProxyIp() {
         return localProxyAddress.split(":")[0];

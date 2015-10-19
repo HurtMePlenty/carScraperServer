@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.*;
 
@@ -26,11 +27,13 @@ public class TorPageLoader {
     public String getPage(String urlString) {
         try {
             synchronized (lock) {
-                if (requestsMade++ > requestsPerIP) {
+                if (requestsMade >= requestsPerIP) {
                     TorProxyService.instance.establishTor();
                     requestsMade = 0;
                 }
             }
+
+            requestsMade++;
 
             String proxyIp = TorProxyService.instance.getProxyIp();
             int proxyPort = TorProxyService.instance.getProxyPort();
@@ -51,6 +54,12 @@ public class TorPageLoader {
         } catch (SocketException e) {
             TorProxyService.instance.establishTor();
             requestsMade = 0;
+            return getPage(urlString);
+        } catch (IOException e) {
+            if (e.toString().contains("503 for URL")) {
+                TorProxyService.instance.establishTor();
+                requestsMade = 0;
+            }
             return getPage(urlString);
         } catch (Exception e) {
             throw new RuntimeException(e);
