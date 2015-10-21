@@ -7,17 +7,17 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 
-@Component
-public class CarPageProcessor {
+public class CarsComPageProcessor {
 
-    @Autowired
     TorPageLoader torPageLoader;
 
-    private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(CarPageProcessor.class);
+    private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(CarsComPageProcessor.class);
+
+    CarsComPageProcessor(TorPageLoader torPageLoader) {
+        this.torPageLoader = torPageLoader;
+    }
 
     public ResultItem process(String url) {
         try {
@@ -61,6 +61,14 @@ public class CarPageProcessor {
                     if (StringUtils.isNotEmpty(mileage)) {
                         resultItem.setMileage(Integer.parseInt(mileage));
                     }
+                }
+            }
+
+            elements = document.select(".main-header.core");
+            if (elements.size() > 0) {
+                String zipcodeStr = elements.get(0).attr("data-zip");
+                if (StringUtils.isNotEmpty(zipcodeStr)) {
+                    resultItem.setZipcode(Long.parseLong(zipcodeStr));
                 }
             }
 

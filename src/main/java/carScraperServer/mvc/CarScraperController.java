@@ -1,21 +1,28 @@
 package carScraperServer.mvc;
 
-import carScraperServer.services.CarsComScrapeService;
+import carScraperServer.httpresults.JsonResult;
+import carScraperServer.scrapeEngine.CarsComSearchHelper;
+import carScraperServer.scrapeEngine.UserSearchQuery;
+import carScraperServer.services.CarsScrapeService;
 import carScraperServer.services.CarsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.ServletContext;
+import java.util.Set;
 
 @Controller
-@RequestMapping("/carsComScraper")
+@RequestMapping("/carsScraper")
 public class CarScraperController {
 
     @Autowired
-    CarsComScrapeService carsComScrapeService;
+    CarsScrapeService carsScrapeService;
 
     @Autowired
     ServletContext servletContext;
@@ -23,7 +30,48 @@ public class CarScraperController {
     @Autowired
     CarsService carsService;
 
+
     @RequestMapping(value = "", method = RequestMethod.GET)
+    public String mainPage(ModelMap model) {
+        model.addAttribute("itemsInDB", carsService.carsCount());
+        model.addAttribute("tasksInProgress", carsScrapeService.getRequestsInProgress());
+
+        return "mainPage";
+    }
+
+    @RequestMapping(value = "/search", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public JsonResult performRequest(@RequestParam String make,
+                                     @RequestParam String model,
+                                     @RequestParam Integer year,
+                                     @RequestParam Long zipcode,
+                                     @RequestParam(required = false) Double price) {
+        UserSearchQuery userSearchQuery = new UserSearchQuery();
+        userSearchQuery.setMake(make);
+        userSearchQuery.setModel(model);
+        userSearchQuery.setYear(year);
+        userSearchQuery.setZipCode(zipcode);
+        userSearchQuery.setPrice(price);
+
+        JsonResult result = carsScrapeService.execute(userSearchQuery);
+        //Result res = new Result();
+        //res.message = "sdfsdf";
+        return result;
+    }
+
+    @RequestMapping(value = "/showMakes", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public Set<String> showMakes() {
+        return CarsComSearchHelper.getMakesNames();
+    }
+
+    @RequestMapping(value = "/showModels", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public Set<String> showModels() {
+        return CarsComSearchHelper.getModelNames();
+    }
+
+   /* @RequestMapping(value = "", method = RequestMethod.GET)
     public String carsComScraper(ModelMap model) {
 
         if (carsComScrapeService.isRunning()) {
@@ -55,5 +103,6 @@ public class CarScraperController {
         }
 
         return "redirect:/carsComScraper";
-    }
+    }*/
+
 }

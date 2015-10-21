@@ -36,6 +36,10 @@
           <root url="jar://$MODULE_DIR$/libs/netlib-0.0.4-javadoc.jar!/" />
           <root url="jar://$MODULE_DIR$/libs/netlib-0.0.4-javadoc.jar!/" />
           <root url="jar://$MODULE_DIR$/libs/netlib-0.0.4-javadoc.jar!/" />
+          <root url="jar://$MODULE_DIR$/libs/netlib-0.0.4-javadoc.jar!/" />
+          <root url="jar://$MODULE_DIR$/libs/netlib-0.0.4-javadoc.jar!/" />
+          <root url="jar://$MODULE_DIR$/libs/netlib-0.0.4-javadoc.jar!/" />
+          <root url="jar://$MODULE_DIR$/libs/netlib-0.0.4-javadoc.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -47,6 +51,10 @@
           <root url="jar://$MODULE_DIR$/libs/netlib-0.0.4-sources.jar!/" />
           <root url="jar://$MODULE_DIR$/libs/netlib-0.0.4-sources.jar!/" />
           <root url="jar://$MODULE_DIR$/libs/netlib-0.0.4-sources.jar!/" />
+          <root url="jar://$MODULE_DIR$/libs/netlib-0.0.4-sources.jar!/" />
+          <root url="jar://$MODULE_DIR$/libs/netlib-0.0.4-sources.jar!/" />
+          <root url="jar://$MODULE_DIR$/libs/netlib-0.0.4-sources.jar!/" />
+          <root url="jar://$MODULE_DIR$/libs/netlib-0.0.4-sources.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -55,6 +63,10 @@
     <orderEntry type="module-library">
       <library name="Gradle: netlib-0.0.4">
         <CLASSES>
+          <root url="jar://$MODULE_DIR$/libs/netlib-0.0.4.jar!/" />
+          <root url="jar://$MODULE_DIR$/libs/netlib-0.0.4.jar!/" />
+          <root url="jar://$MODULE_DIR$/libs/netlib-0.0.4.jar!/" />
+          <root url="jar://$MODULE_DIR$/libs/netlib-0.0.4.jar!/" />
           <root url="jar://$MODULE_DIR$/libs/netlib-0.0.4.jar!/" />
           <root url="jar://$MODULE_DIR$/libs/netlib-0.0.4.jar!/" />
           <root url="jar://$MODULE_DIR$/libs/netlib-0.0.4.jar!/" />
@@ -79,7 +91,6 @@
     <orderEntry type="library" name="Gradle: junit:junit:4.11" level="project" />
     <orderEntry type="library" name="Gradle: jstl:jstl:1.2" level="project" />
     <orderEntry type="library" name="Gradle: org.springframework.data:spring-data-mongodb:1.8.0.RELEASE" level="project" />
-    <orderEntry type="library" name="Gradle: org.codehaus.jackson:jackson-mapper-asl:1.9.13" level="project" />
     <orderEntry type="library" name="Gradle: org.seleniumhq.selenium:selenium-chrome-driver:2.47.2" level="project" />
     <orderEntry type="library" name="Gradle: org.seleniumhq.selenium:selenium-htmlunit-driver:2.47.2" level="project" />
     <orderEntry type="library" name="Gradle: org.seleniumhq.selenium:selenium-firefox-driver:2.47.2" level="project" />
@@ -94,7 +105,6 @@
     <orderEntry type="library" name="Gradle: org.springframework.data:spring-data-commons:1.11.0.RELEASE" level="project" />
     <orderEntry type="library" name="Gradle: org.mongodb:mongo-java-driver:2.13.0" level="project" />
     <orderEntry type="library" name="Gradle: org.slf4j:jcl-over-slf4j:1.7.12" level="project" />
-    <orderEntry type="library" name="Gradle: org.codehaus.jackson:jackson-core-asl:1.9.13" level="project" />
     <orderEntry type="library" name="Gradle: cglib:cglib-nodep:2.1_3" level="project" />
     <orderEntry type="library" name="Gradle: com.google.guava:guava:18.0" level="project" />
     <orderEntry type="library" name="Gradle: aopalliance:aopalliance:1.0" level="project" />
@@ -132,5 +142,9 @@
     <orderEntry type="library" name="Gradle: com.google.code.gson:gson:2.3.1" level="project" />
     <orderEntry type="library" name="Gradle: org.seleniumhq.selenium:selenium-api:2.47.2" level="project" />
     <orderEntry type="library" name="Gradle: org.apache.httpcomponents:httpcore:4.4.1" level="project" />
+    <orderEntry type="library" name="Gradle: com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:2.6.1" level="project" />
+    <orderEntry type="library" name="Gradle: com.fasterxml.jackson.core:jackson-core:2.6.1" level="project" />
+    <orderEntry type="library" name="Gradle: com.fasterxml.jackson.core:jackson-databind:2.6.1" level="project" />
+    <orderEntry type="library" name="Gradle: com.fasterxml.jackson.core:jackson-annotations:2.6.0" level="project" />
   </component>
 </module>

@@ -1,23 +1,21 @@
 package carScraperServer;
 
-import carScraperServer.scrapeEngine.PhantomInitializer;
-import carScraperServer.services.CarsComScrapeService;
+import carScraperServer.httpresults.JsonResult;
+import carScraperServer.scrapeEngine.CarsComSearchRequestBuilder;
+import carScraperServer.scrapeEngine.UserSearchQuery;
+import carScraperServer.services.CarsScrapeService;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.openqa.selenium.OutputType;
-import org.openqa.selenium.TakesScreenshot;
-import org.openqa.selenium.WebDriver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -30,33 +28,47 @@ import java.util.List;
 public class ScraperTest {
 
     @Autowired
-    CarsComScrapeService carsComScrapeService;
+    CarsScrapeService carsScrapeService;
+
 
     @Test
-    public void testScrape() throws Exception {
-        carsComScrapeService.execute();
+    public void testScraper() {
+
+        UserSearchQuery userSearchQuery = new UserSearchQuery();
+        userSearchQuery.setMake("BMW");
+        userSearchQuery.setYear(2010);
+        userSearchQuery.setModel("X3");
+        userSearchQuery.setZipCode(10001);
+
+        carsScrapeService.execute(userSearchQuery);
+
+        try {
+            Thread.sleep(10000000);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        //carsComScrapeService.execute()
     }
 
     @Test
-    public void testPhantom() {
-        WebDriver driver = PhantomInitializer.instance.getDriver(null, null, "src/main/webapp/phantomjs");
-        driver.get("http://www.cars.com");
-        //driver.get("http://www.whoer.net");
-
-        File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
-        System.out.println(scrFile.getPath());
+    public void testDataFind() {
+        UserSearchQuery userSearchQuery = new UserSearchQuery();
+        userSearchQuery.setMake("Acura");
+        userSearchQuery.setModel("CL");
+        JsonResult jsonResult = carsScrapeService.renderResponseFromDB(userSearchQuery);
+        int a = 1;
     }
 
     @Test
     public void testDirectRequest() {
         try {
 
-            SearchRequestBuilder searchRequestBuilder = new SearchRequestBuilder();
-            searchRequestBuilder.setMakeId("20001");
-            searchRequestBuilder.setModelId("20773");
-            searchRequestBuilder.setZipCode("10001");
+            CarsComSearchRequestBuilder carsComSearchRequestBuilder = new CarsComSearchRequestBuilder();
+            carsComSearchRequestBuilder.setMakeId("20001");
+            carsComSearchRequestBuilder.setModelId("20773");
+            carsComSearchRequestBuilder.setZipCode(10001l);
 
-            URL url = new URL(searchRequestBuilder.renderUrl());
+            URL url = new URL(carsComSearchRequestBuilder.renderUrl());
             HttpURLConnection uc = (HttpURLConnection) url.openConnection();
             uc.connect();
 

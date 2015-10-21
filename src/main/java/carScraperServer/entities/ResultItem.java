@@ -18,6 +18,7 @@ public class ResultItem {
     private String url;
     private String color;
     private Integer mileage;
+    private Long zipcode;
 
     public ResultItem() {
 
@@ -97,5 +98,13 @@ public class ResultItem {
 
     public String getId() {
         return id;
+    }
+
+    public Long getZipcode() {
+        return zipcode;
+    }
+
+    public void setZipcode(Long zipcode) {
+        this.zipcode = zipcode;
     }
 }

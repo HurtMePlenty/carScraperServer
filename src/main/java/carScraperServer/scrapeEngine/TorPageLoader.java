@@ -15,6 +15,7 @@ public class TorPageLoader {
     private int requestsPerIP;
     private volatile int requestsMade;
     private int connectionTimeout;
+    private boolean useTor;
 
     private Object lock = new Object();
 
@@ -26,20 +27,28 @@ public class TorPageLoader {
 
     public String getPage(String urlString) {
         try {
-            synchronized (lock) {
-                if (requestsMade >= requestsPerIP) {
-                    TorProxyService.instance.establishTor();
-                    requestsMade = 0;
+            HttpURLConnection uc;
+            URL url = new URL(urlString);
+
+            if (useTor) {
+                synchronized (lock) {
+                    if (requestsMade >= requestsPerIP) {
+                        TorProxyService.instance.establishTor();
+                        requestsMade = 0;
+                    }
                 }
+
+                requestsMade++;
+
+                String proxyIp = TorProxyService.instance.getProxyIp();
+                int proxyPort = TorProxyService.instance.getProxyPort();
+                Proxy proxy = new Proxy(Proxy.Type.SOCKS, new InetSocketAddress(proxyIp, proxyPort));
+
+                uc = (HttpURLConnection) url.openConnection(proxy);
+            } else {
+                uc = (HttpURLConnection) url.openConnection();
             }
 
-            requestsMade++;
-
-            String proxyIp = TorProxyService.instance.getProxyIp();
-            int proxyPort = TorProxyService.instance.getProxyPort();
-            Proxy proxy = new Proxy(Proxy.Type.SOCKS, new InetSocketAddress(proxyIp, proxyPort));
-            URL url = new URL(urlString);
-            HttpURLConnection uc = (HttpURLConnection) url.openConnection(proxy);
             uc.setConnectTimeout(connectionTimeout);
             uc.connect();
 
@@ -52,15 +61,15 @@ public class TorPageLoader {
             return page.toString();
 
         } catch (SocketException e) {
-            TorProxyService.instance.establishTor();
-            requestsMade = 0;
-            return getPage(urlString);
-        } catch (IOException e) {
-            if (e.toString().contains("503 for URL")) {
-                TorProxyService.instance.establishTor();
-                requestsMade = 0;
+            if (useTor) {
+                return getPage(urlString);
             }
-            return getPage(urlString);
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            if (useTor) {
+                return getPage(urlString);
+            }
+            throw new RuntimeException(e);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -69,6 +78,11 @@ public class TorPageLoader {
     @Required
     public void setRequestsPerIP(int requestsPerIP) {
         this.requestsPerIP = requestsPerIP;
+    }
+
+    @Required
+    public void setUseTor(boolean useTor) {
+        this.useTor = useTor;
     }
 
     @Required
