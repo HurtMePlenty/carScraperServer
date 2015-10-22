@@ -11,6 +11,7 @@ import org.jsoup.select.Elements;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.query.BasicQuery;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -38,7 +39,7 @@ public class ScraperTest {
         userSearchQuery.setMake("BMW");
         userSearchQuery.setYear(2010);
         userSearchQuery.setModel("X3");
-        userSearchQuery.setZipCode(10001);
+        userSearchQuery.setZipCode(10002);
 
         carsScrapeService.execute(userSearchQuery);
 
@@ -53,9 +54,19 @@ public class ScraperTest {
     @Test
     public void testDataFind() {
         UserSearchQuery userSearchQuery = new UserSearchQuery();
-        userSearchQuery.setMake("Acura");
-        userSearchQuery.setModel("CL");
+        userSearchQuery.setMake("BMW");
+        userSearchQuery.setYear(2010);
+        userSearchQuery.setModel("X3");
+        userSearchQuery.setZipCode(10002);
+
         JsonResult jsonResult = carsScrapeService.renderResponseFromDB(userSearchQuery);
+        int a = 1;
+    }
+
+    @Test
+    public void testBasicQuery(){
+        String removeQuery = "{'vin':{'$in':['sdfsf','sdfsdf','sdfsdf']}}";
+        BasicQuery basicQuery = new BasicQuery(removeQuery);
         int a = 1;
     }
 

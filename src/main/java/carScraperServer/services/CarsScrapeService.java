@@ -8,6 +8,7 @@ import carScraperServer.repositories.CarMongoRepository;
 import carScraperServer.repositories.CarsComMakeModelRepository;
 import carScraperServer.repositories.SearchQueryRepository;
 import carScraperServer.scrapeEngine.*;
+import com.mongodb.QueryBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,10 +70,8 @@ public class CarsScrapeService {
 
 
         AdditionalSearchParams additionalSearchParams = new AdditionalSearchParams(priceSpread);
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.DATE, -1);
-        Date lastDayDate = cal.getTime();
 
+        Date lastDayDate = getBorderDateForSearch();
 
         SearchQueryEntity searchQueryEntity = searchQueryRepository.findByDateGreaterThanAndToken(lastDayDate, queryToken);
         if (searchQueryEntity != null) {
@@ -90,25 +89,38 @@ public class CarsScrapeService {
         return new JsonDataResult(new ArrayList<>(), false);
     }
 
-    private void taskFinished(CarsSearchProcessor carsSearchProcessor) {
+    private synchronized void taskFinished(CarsSearchProcessor carsSearchProcessor) {
         UserSearchQuery userSearchQuery = carsSearchProcessor.getUserSearchQuery();
+        Long currentZipCode = userSearchQuery.getZipCode();
         try {
             LOG.info(String.format("Task finished: %s", userSearchQuery.getQueryToken()));
             List<ResultItem> resultItemList = carsSearchProcessor.getResultItemList();
+
+            if (resultItemList.isEmpty()) {
+                return;
+            }
 
             //remove old data by VIN
 
             //result item must contain VIN
             resultItemList = resultItemList.stream().filter((item) -> StringUtils.isNotEmpty(item.getVin())).collect(Collectors.toList());
-            StringBuilder vins = new StringBuilder();
+
+            List<String> vinList = resultItemList.stream().map(ResultItem::getVin).collect(Collectors.toList());
+            List<ResultItem> existingItems = carMongoRepository.findByVinIn(vinList);
+
+            resultItemList = resultItemList.stream().filter((resultItem) -> {
+                return !existingItems.stream().anyMatch((existingItem) -> existingItem.getVin().equals(resultItem.getVin()));
+            }).collect(Collectors.toList());
+
+            resultItemList.addAll(existingItems);
 
             for (ResultItem resultItem : resultItemList) {
-                vins.append("'").append(resultItem.getVin()).append("',");
+                if (!resultItem.getZipcodeList().contains(currentZipCode)) {
+                    resultItem.getZipcodeList().add(currentZipCode);
+                    resultItem.setDate(new Date());
+                }
             }
 
-            String removeQuery = String.format("{'vin':{$in:[%s]}}", vins.toString());
-            BasicQuery basicQuery = new BasicQuery(removeQuery);
-            mongoTemplate.remove(basicQuery, ResultItem.class);
             carMongoRepository.save(resultItemList);
 
             SearchQueryEntity searchQueryEntity = new SearchQueryEntity();
@@ -130,21 +142,33 @@ public class CarsScrapeService {
 
     public JsonResult renderResponseFromDB(UserSearchQuery userSearchQuery) {
 
-        StringBuilder queryBuilder = new StringBuilder();
-        queryBuilder.append("{");
+        QueryBuilder mainQuery = QueryBuilder.start();
         if (userSearchQuery.getMake() != null) {
-            queryBuilder.append(String.format("'%s':'%s',", "make", userSearchQuery.getMake()));
+            mainQuery.and(QueryBuilder.start().put("make").is(userSearchQuery.getMake()).get());
         }
+
         if (userSearchQuery.getModel() != null) {
-            queryBuilder.append(String.format("'%s':'%s',", "model", userSearchQuery.getModel()));
+            mainQuery.and(QueryBuilder.start().put("model").is(userSearchQuery.getModel()).get());
         }
+
         if (userSearchQuery.getYear() != null) {
-            queryBuilder.append(String.format("'%s':%d,", "year", userSearchQuery.getYear()));
+            mainQuery.and(QueryBuilder.start().put("year").is(userSearchQuery.getYear()).get());
         }
-        queryBuilder.append("}");
+
+        if (userSearchQuery.getZipCode() != null) {
+            mainQuery.and(QueryBuilder.start().put("zipcodeList").is(userSearchQuery.getZipCode()).get());
+        }
+
+        if (userSearchQuery.getPrice() != null) {
+            mainQuery.and(QueryBuilder.start().put("price").greaterThanEquals(userSearchQuery.getPrice() - priceSpread).get());
+            mainQuery.and(QueryBuilder.start().put("price").lessThanEquals(userSearchQuery.getPrice() + priceSpread).get());
+        }
+
+        mainQuery.and(QueryBuilder.start().put("date").greaterThanEquals(getBorderDateForSearch()).get());
 
 
-        BasicQuery basicQuery = new BasicQuery(queryBuilder.toString());
+        BasicQuery basicQuery = new BasicQuery(mainQuery.get());
+
 
         List<ResultItem> data = mongoTemplate.find(basicQuery, ResultItem.class);
         return new JsonDataResult(data, true);
@@ -158,6 +182,12 @@ public class CarsScrapeService {
         return result;
     }
 
+
+    private Date getBorderDateForSearch() {
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DATE, -1);
+        return cal.getTime();
+    }
 
     @Required
     public void setMaxThreads(int maxThreads) {

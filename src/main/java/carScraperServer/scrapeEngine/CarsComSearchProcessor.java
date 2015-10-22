@@ -85,9 +85,11 @@ public class CarsComSearchProcessor implements CarsSearchProcessor {
                 Elements nextPage = doc.select(".pagination a.right");
                 if (nextPage.size() > 0) {
                     String href = nextPage.get(0).attr("href");
-                    String nextPageData = torPageLoader.getPage(href);
-                    doc = Jsoup.parse(nextPageData);
-                    hasNextPage = true;
+                    if (href != null && !href.contains("javascript:")) {
+                        String nextPageData = torPageLoader.getPage(href);
+                        doc = Jsoup.parse(nextPageData);
+                        hasNextPage = true;
+                    }
                 }
 
             } while (hasNextPage);//page condition here

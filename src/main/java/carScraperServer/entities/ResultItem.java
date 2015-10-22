@@ -3,6 +3,10 @@ package carScraperServer.entities;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
 @Document(collection = "cars")
 public class ResultItem {
 
@@ -18,7 +22,8 @@ public class ResultItem {
     private String url;
     private String color;
     private Integer mileage;
-    private Long zipcode;
+    private List<Long> zipcodeList = new ArrayList<>();
+    private Date date;
 
     public ResultItem() {
 
@@ -37,7 +42,7 @@ public class ResultItem {
     }
 
     public void setMake(String make) {
-        this.make = make;
+        this.make = make == null ? null : make.toLowerCase();
     }
 
     public String getModel() {
@@ -45,7 +50,7 @@ public class ResultItem {
     }
 
     public void setModel(String model) {
-        this.model = model;
+        this.model = model == null ? null : model.toLowerCase();
     }
 
     public String getTrim() {
@@ -53,7 +58,7 @@ public class ResultItem {
     }
 
     public void setTrim(String trim) {
-        this.trim = trim;
+        this.trim = trim == null ? null : trim.toLowerCase();
     }
 
     public String getVin() {
@@ -61,7 +66,7 @@ public class ResultItem {
     }
 
     public void setVin(String vin) {
-        this.vin = vin;
+        this.vin = vin == null ? null : vin.toLowerCase();
     }
 
     public Double getPrice() {
@@ -85,7 +90,7 @@ public class ResultItem {
     }
 
     public void setColor(String color) {
-        this.color = color;
+        this.color = color == null ? null : color.toLowerCase();
     }
 
     public Integer getMileage() {
@@ -100,11 +105,19 @@ public class ResultItem {
         return id;
     }
 
-    public Long getZipcode() {
-        return zipcode;
+    public List<Long> getZipcodeList() {
+        return zipcodeList;
     }
 
-    public void setZipcode(Long zipcode) {
-        this.zipcode = zipcode;
+    public void setZipcodeList(List<Long> zipcode) {
+        this.zipcodeList = zipcode;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
     }
 }

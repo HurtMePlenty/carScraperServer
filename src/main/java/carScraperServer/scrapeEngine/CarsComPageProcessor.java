@@ -64,14 +64,6 @@ public class CarsComPageProcessor {
                 }
             }
 
-            elements = document.select(".main-header.core");
-            if (elements.size() > 0) {
-                String zipcodeStr = elements.get(0).attr("data-zip");
-                if (StringUtils.isNotEmpty(zipcodeStr)) {
-                    resultItem.setZipcode(Long.parseLong(zipcodeStr));
-                }
-            }
-
             return resultItem;
         } catch (Exception e) {
             LOG.warn(String.format("Failed to load item with url %s \n Exception: %s", url, e.toString()));

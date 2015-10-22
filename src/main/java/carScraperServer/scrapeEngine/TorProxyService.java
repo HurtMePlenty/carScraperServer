@@ -10,6 +10,7 @@ public enum TorProxyService {
 
     private final Object lock = new Object();
     private volatile boolean isFinished;
+    private volatile boolean portOpened;
 
     public void establishTor() {
 
@@ -28,8 +29,14 @@ public enum TorProxyService {
 
             Thread thread = new Thread(() -> {
                 isFinished = false;
+                portOpened = false;
                 String[] arguments = new String[]{localProxyAddress, "socks_over_tor_over_tls_over_tcpip"};
-                CustomNetlibProxy.start(arguments);
+                CustomNetlibProxy.start(arguments, () -> {
+                    synchronized (lock) {
+                        portOpened = true;
+                        lock.notifyAll();
+                    }
+                });
                 synchronized (lock) {
                     isFinished = true;
                     lock.notifyAll();
@@ -37,6 +44,11 @@ public enum TorProxyService {
             });
 
             thread.start();
+            synchronized (lock) {
+                while (!portOpened) {
+                    lock.wait();
+                }
+            }
             Thread.sleep(2000);
         } catch (Exception e) {
             throw new RuntimeException(e);

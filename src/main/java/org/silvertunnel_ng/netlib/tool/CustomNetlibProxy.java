@@ -34,22 +34,14 @@ public class CustomNetlibProxy {
     private static NetLayerIDs lowerLayerNetLayerId;
     private static TorNetLayer torNetLayer;
 
-    /**
-     * Start the program, but not from command line.
-     *
-     * @param argv
-     */
-    public static void start(final String[] argv) {
-        startedFromCommandLine = false;
-        main(argv);
-    }
 
     /**
      * Start the program from command line.
      *
      * @param argv
      */
-    public static void main(final String[] argv) {
+    public static void start(final String[] argv, Runnable portOpenedCallback) {
+        startedFromCommandLine = false;
         stopped = false;
         started = false;
         if (argv.length < 1) {
@@ -89,6 +81,8 @@ public class CustomNetlibProxy {
             return;
         }
         started = true;
+
+        portOpenedCallback.run();
 
         // parse the netLayerId
         lowerLayerNetLayerId = NetLayerIDs.getByValue(argv[1]);
