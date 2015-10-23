@@ -9,7 +9,6 @@ import carScraperServer.repositories.CarsComMakeModelRepository;
 import carScraperServer.repositories.SearchQueryRepository;
 import carScraperServer.scrapeEngine.*;
 import com.mongodb.QueryBuilder;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
@@ -103,16 +102,16 @@ public class CarsScrapeService {
             LOG.info(String.format("task %s finished with %d items",
                     userSearchQuery.getQueryToken(), resultItemList.size()));
 
-            //remove old data by VIN
 
+            //use URL instead of VIN
             //result item must contain VIN
-            resultItemList = resultItemList.stream().filter((item) -> StringUtils.isNotEmpty(item.getVin())).collect(Collectors.toList());
+            //resultItemList = resultItemList.stream().filter((item) -> StringUtils.isNotEmpty(item.getVin())).collect(Collectors.toList());
 
-            List<String> vinList = resultItemList.stream().map(ResultItem::getVin).collect(Collectors.toList());
-            List<ResultItem> existingItems = carMongoRepository.findByVinIn(vinList);
+            List<String> urlList = resultItemList.stream().map(ResultItem::getUrl).collect(Collectors.toList());
+            List<ResultItem> existingItems = carMongoRepository.findByUrlIn(urlList);
 
             resultItemList = resultItemList.stream().filter((resultItem) -> {
-                return !existingItems.stream().anyMatch((existingItem) -> existingItem.getVin().equals(resultItem.getVin()));
+                return !existingItems.stream().anyMatch((existingItem) -> existingItem.getUrl().equals(resultItem.getUrl()));
             }).collect(Collectors.toList());
 
             resultItemList.addAll(existingItems);
@@ -147,11 +146,11 @@ public class CarsScrapeService {
 
         QueryBuilder mainQuery = QueryBuilder.start();
         if (userSearchQuery.getMake() != null) {
-            mainQuery.and(QueryBuilder.start().put("make").is(userSearchQuery.getMake()).get());
+            mainQuery.and(QueryBuilder.start().put("make").is(userSearchQuery.getMake().toLowerCase()).get());
         }
 
         if (userSearchQuery.getModel() != null) {
-            mainQuery.and(QueryBuilder.start().put("model").is(userSearchQuery.getModel()).get());
+            mainQuery.and(QueryBuilder.start().put("model").is(userSearchQuery.getModel().toLowerCase()).get());
         }
 
         if (userSearchQuery.getYear() != null) {

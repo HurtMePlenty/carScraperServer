@@ -9,4 +9,5 @@ import java.util.List;
 public interface CarMongoRepository extends MongoRepository<ResultItem, String> {
     public ResultItem findByUrl(String url);
     public List<ResultItem> findByVinIn(List<String> vins);
+    public List<ResultItem> findByUrlIn(List<String> urls);
 }

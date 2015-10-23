@@ -39,8 +39,8 @@ public class ScraperTest {
         userSearchQuery.setMake("BMW");
         userSearchQuery.setYear(2011);
         userSearchQuery.setModel("X3");
-        //userSearchQuery.setZipCode(92626);
-        userSearchQuery.setZipCode(10001);
+        userSearchQuery.setZipCode(92626);
+        //userSearchQuery.setZipCode(10001);
 
         carsScrapeService.execute(userSearchQuery);
 
