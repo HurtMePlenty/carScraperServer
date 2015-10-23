@@ -14,12 +14,17 @@ public class CarsComPageProcessor {
     TorPageLoader torPageLoader;
 
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(CarsComPageProcessor.class);
+    private static int maxAttempts = 5;
 
     CarsComPageProcessor(TorPageLoader torPageLoader) {
         this.torPageLoader = torPageLoader;
     }
 
     public ResultItem process(String url) {
+        return process(url, 0);
+    }
+
+    private ResultItem process(String url, int attempt) {
         try {
             ResultItem resultItem;
 
@@ -28,7 +33,11 @@ public class CarsComPageProcessor {
 
             Elements elements = document.select("a.js-send-to-phone");
             if (elements.size() == 0) {
-                return null;
+                if (attempt >= maxAttempts) {
+                    throw new RuntimeException("Failed to find main info container. Probably page failed to load");
+                }
+                
+                return process(url, attempt + 1);
             }
 
             Element dataElem = elements.get(0);

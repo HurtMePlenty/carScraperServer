@@ -20,7 +20,7 @@ public class TorPageLoader {
     private volatile boolean reInitCauseOfFail;
 
     private Object lock = new Object();
-    private final int maxAttemptsOnIOException = 3;
+    private final int maxAttempts = 5;
 
     private final int BUFFER_SIZE = 1024;
 
@@ -65,6 +65,7 @@ public class TorPageLoader {
             }
 
             uc.setConnectTimeout(connectionTimeout);
+            uc.setReadTimeout(connectionTimeout);
             uc.connect();
 
             StringBuilder page = new StringBuilder();
@@ -91,19 +92,32 @@ public class TorPageLoader {
                 reInitCauseOfFail = true;
                 return getPage(urlString, attempt);
             }
+            LOG.warn(String.format("Failed to load item for url: %s. Exception: %s", urlString, e.toString()));
             throw new RuntimeException(e);
+        } catch (SocketTimeoutException e) {
+            LOG.warn(String.format("Exception in page loader: %s", e.toString()));
+            if (attempt >= maxAttempts) {
+                LOG.warn(String.format("Failed to load item for url: %s. Exception: %s", urlString, e.toString()));
+                throw new RuntimeException(e);
+            }
+            return getPage(urlString, attempt + 1);
         } catch (IOException e) {
             LOG.warn(String.format("Exception in page loader: %s", e.toString()));
-            if (attempt >= maxAttemptsOnIOException) {
+            if (attempt >= maxAttempts) {
+                LOG.warn(String.format("Failed to load item for url: %s. Exception: %s", urlString, e.toString()));
                 throw new RuntimeException(e);
             }
             if (useTor) {
                 reInitCauseOfFail = true;
                 return getPage(urlString, attempt + 1);
             }
+            LOG.warn(String.format("Failed to load item for url: %s. Exception: %s", urlString, e.toString()));
+
             throw new RuntimeException(e);
         } catch (Exception e) {
             LOG.warn(String.format("Exception in page loader: %s", e.toString()));
+            LOG.warn(String.format("Failed to load item for url: %s. Exception: %s", urlString, e.toString()));
+
             throw new RuntimeException(e);
         }
     }

@@ -100,6 +100,9 @@ public class CarsScrapeService {
                 return;
             }
 
+            LOG.info(String.format("task %s finished with %d items",
+                    userSearchQuery.getQueryToken(), resultItemList.size()));
+
             //remove old data by VIN
 
             //result item must contain VIN
@@ -160,7 +163,10 @@ public class CarsScrapeService {
         }
 
         if (userSearchQuery.getPrice() != null) {
-            mainQuery.and(QueryBuilder.start().put("price").greaterThanEquals(userSearchQuery.getPrice() - priceSpread).get());
+            Double minPrice = userSearchQuery.getPrice() - priceSpread;
+            if (minPrice > 0) {
+                mainQuery.and(QueryBuilder.start().put("price").greaterThanEquals(minPrice).get());
+            }
             mainQuery.and(QueryBuilder.start().put("price").lessThanEquals(userSearchQuery.getPrice() + priceSpread).get());
         }
 

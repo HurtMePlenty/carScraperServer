@@ -22,6 +22,7 @@ public class CarsComSearchProcessor implements CarsSearchProcessor {
     private ExecutorService mainExecuter;
     private Semaphore semaphore;
     private boolean isError = false;
+    private Integer totalItemsExpected;
 
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(CarsComSearchProcessor.class);
 
@@ -42,7 +43,9 @@ public class CarsComSearchProcessor implements CarsSearchProcessor {
             carsComSearchRequestBuilder.setMaxPrice(maxPrice);
 
             Double minPrice = userSearchQuery.getPrice() - additionalSearchParams.getPriceSpread();
-            carsComSearchRequestBuilder.setMinPrice(minPrice);
+            if (minPrice > 0) {
+                carsComSearchRequestBuilder.setMinPrice(minPrice);
+            }
         }
 
         String searchUrl = carsComSearchRequestBuilder.renderUrl();
@@ -57,6 +60,16 @@ public class CarsComSearchProcessor implements CarsSearchProcessor {
         try {
             String searchResult = torPageLoader.getPage(searchUrl);
             Document doc = Jsoup.parse(searchResult);
+
+            Elements totalItems = doc.select("h3.secondary");
+            if (totalItems.size() > 0) {
+                String html = totalItems.get(0).html();
+                if (html.split(" ").length > 1) {
+                    totalItemsExpected = Integer.parseInt(html.split(" ")[0]);
+                    LOG.info(String.format("%s Items expected: %d", userSearchQuery.getQueryToken(), totalItemsExpected));
+                }
+            }
+
             boolean hasNextPage;
             do {
                 Elements carNodes = doc.select("div h4 a");
@@ -68,10 +81,13 @@ public class CarsComSearchProcessor implements CarsSearchProcessor {
                     semaphore.acquire();
 
                     mainExecuter.execute(() -> {
+                        System.out.println("item requested");
                         ResultItem resultItem = carsComPageProcessor.process("http://www.cars.com" + carUrl);
                         if (resultItem != null) {
                             resultItemList.add(resultItem);
                             System.out.println("item added");
+                        } else {
+                            System.out.println("item is NULL");
                         }
                         semaphore.release();
                     });

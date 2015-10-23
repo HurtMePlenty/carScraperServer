@@ -37,9 +37,10 @@ public class ScraperTest {
 
         UserSearchQuery userSearchQuery = new UserSearchQuery();
         userSearchQuery.setMake("BMW");
-        userSearchQuery.setYear(2010);
+        userSearchQuery.setYear(2011);
         userSearchQuery.setModel("X3");
-        userSearchQuery.setZipCode(10002);
+        //userSearchQuery.setZipCode(92626);
+        userSearchQuery.setZipCode(10001);
 
         carsScrapeService.execute(userSearchQuery);
 
@@ -55,9 +56,9 @@ public class ScraperTest {
     public void testDataFind() {
         UserSearchQuery userSearchQuery = new UserSearchQuery();
         userSearchQuery.setMake("BMW");
-        userSearchQuery.setYear(2010);
+        userSearchQuery.setYear(2011);
         userSearchQuery.setModel("X3");
-        userSearchQuery.setZipCode(10002);
+        userSearchQuery.setZipCode(92626);
 
         JsonResult jsonResult = carsScrapeService.renderResponseFromDB(userSearchQuery);
         int a = 1;
