@@ -110,17 +110,19 @@ public class CarsScrapeService {
             List<String> urlList = resultItemList.stream().map(ResultItem::getUrl).collect(Collectors.toList());
             List<ResultItem> existingItems = carMongoRepository.findByUrlIn(urlList);
 
-            resultItemList = resultItemList.stream().filter((resultItem) -> {
-                return !existingItems.stream().anyMatch((existingItem) -> existingItem.getUrl().equals(resultItem.getUrl()));
-            }).collect(Collectors.toList());
-
-            resultItemList.addAll(existingItems);
-
             for (ResultItem resultItem : resultItemList) {
+                ResultItem existingItem = existingItems.stream().filter(item ->
+                        item.getUrl().equals(resultItem.getUrl())).findFirst().orElse(null);
+                if (existingItem != null) {
+                    resultItem.setId(existingItem.getId());
+                    resultItem.setZipcodeList(existingItem.getZipcodeList());
+                }
+
                 if (!resultItem.getZipcodeList().contains(currentZipCode)) {
                     resultItem.getZipcodeList().add(currentZipCode);
-                    resultItem.setDate(new Date());
                 }
+                resultItem.setDate(new Date());
+
             }
 
             carMongoRepository.save(resultItemList);

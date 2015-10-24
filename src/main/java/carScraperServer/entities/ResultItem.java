@@ -120,4 +120,8 @@ public class ResultItem {
     public void setDate(Date date) {
         this.date = date;
     }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 }
