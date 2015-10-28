@@ -24,6 +24,7 @@ public class ResultItem {
     private Integer mileage;
     private List<Long> zipcodeList = new ArrayList<>();
     private Date date;
+    private List<String> imageUrls = new ArrayList<>();
 
     public ResultItem() {
 
@@ -123,5 +124,13 @@ public class ResultItem {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public List<String> getImageUrls() {
+        return imageUrls;
+    }
+
+    public void setImageUrls(List<String> imageUrls) {
+        this.imageUrls = imageUrls;
     }
 }

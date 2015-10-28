@@ -12,7 +12,7 @@ public class CarsComSearchRequestBuilder {
     private Double minPrice;
     private Double maxPrice;
 
-    private final String baseSearchUrl = "http://www.cars.com/for-sale/searchresults.action?searchSource=ADVANCED_SEARCH&rpp=250";
+    private final String baseSearchUrl = "http://www.cars.com/for-sale/searchresults.action?searchSource=ADVANCED_SEARCH&rpp=250&stkTyp=U"; //stkTyp=U - used cars only
     private StringBuilder combinedUrl = new StringBuilder();
 
 

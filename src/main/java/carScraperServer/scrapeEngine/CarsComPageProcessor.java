@@ -36,7 +36,7 @@ public class CarsComPageProcessor {
                 if (attempt >= maxAttempts) {
                     throw new RuntimeException("Failed to find main info container. Probably page failed to load");
                 }
-                
+
                 return process(url, attempt + 1);
             }
 
@@ -71,6 +71,16 @@ public class CarsComPageProcessor {
                         resultItem.setMileage(Integer.parseInt(mileage));
                     }
                 }
+            }
+
+            elements = document.select(".gallery-swipe .items .item img:first-child");
+            for (Element element : elements) {
+                Element nextElem = element.nextElementSibling();
+                if (nextElem != null && nextElem.tagName().equals("img")) {
+                    continue;
+                }
+                String imageUrl = element.attr("data-def-src");
+                resultItem.getImageUrls().add(imageUrl);
             }
 
             return resultItem;
