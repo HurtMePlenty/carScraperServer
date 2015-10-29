@@ -11,13 +11,13 @@ import org.slf4j.LoggerFactory;
 
 public class CarsComPageProcessor {
 
-    TorPageLoader torPageLoader;
+    PageLoader pageLoader;
 
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(CarsComPageProcessor.class);
     private static int maxAttempts = 5;
 
-    CarsComPageProcessor(TorPageLoader torPageLoader) {
-        this.torPageLoader = torPageLoader;
+    CarsComPageProcessor(PageLoader pageLoader) {
+        this.pageLoader = pageLoader;
     }
 
     public ResultItem process(String url) {
@@ -28,7 +28,7 @@ public class CarsComPageProcessor {
         try {
             ResultItem resultItem;
 
-            String page = torPageLoader.getPage(url);
+            String page = pageLoader.getPage(url);
             Document document = Jsoup.parse(page);
 
             Elements elements = document.select("a.js-send-to-phone");

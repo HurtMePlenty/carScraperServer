@@ -1,8 +1,8 @@
 package carScraperServer;
 
+import carScraperServer.entities.ResultItem;
 import carScraperServer.httpresults.JsonResult;
-import carScraperServer.scrapeEngine.CarsComSearchRequestBuilder;
-import carScraperServer.scrapeEngine.UserSearchQuery;
+import carScraperServer.scrapeEngine.*;
 import carScraperServer.services.CarsScrapeService;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -31,6 +31,12 @@ public class ScraperTest {
     @Autowired
     CarsScrapeService carsScrapeService;
 
+    @Autowired
+    TorPageLoader torPageLoader;
+
+    @Autowired
+    SimplePageLoader simplePageLoader;
+
 
     @Test
     public void testScraper() {
@@ -54,6 +60,32 @@ public class ScraperTest {
     }
 
     @Test
+    public void testAutotraderScraper() throws InterruptedException {
+        UserSearchQuery userSearchQuery = new UserSearchQuery();
+        userSearchQuery.setMake("BMW");
+        userSearchQuery.setYear(2011);
+        userSearchQuery.setModel("X3");
+        userSearchQuery.setZipCode(92627);
+
+        Object lock = new Object();
+
+        AdditionalSearchParams additionalSearchParams = new AdditionalSearchParams(1000.0);
+
+        AutotraderSearchProcessor autotraderSearchProcessor = new AutotraderSearchProcessor(1, userSearchQuery, additionalSearchParams, simplePageLoader);
+        autotraderSearchProcessor.startScraping((processor) -> {
+            List<ResultItem> resultItemList = processor.getResultItemList();
+            System.out.println(String.format("Collected: %d", resultItemList.size()));
+            synchronized (lock) {
+                lock.notifyAll();
+            }
+        });
+        synchronized (lock) {
+            lock.wait();
+        }
+
+    }
+
+    @Test
     public void testDataFind() {
         UserSearchQuery userSearchQuery = new UserSearchQuery();
         userSearchQuery.setMake("BMW");
@@ -66,7 +98,7 @@ public class ScraperTest {
     }
 
     @Test
-    public void testBasicQuery(){
+    public void testBasicQuery() {
         String removeQuery = "{'vin':{'$in':['sdfsf','sdfsdf','sdfsdf']}}";
         BasicQuery basicQuery = new BasicQuery(removeQuery);
         int a = 1;

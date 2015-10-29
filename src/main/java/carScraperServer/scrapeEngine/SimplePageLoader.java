@@ -1,35 +1,31 @@
 package carScraperServer.scrapeEngine;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.*;
+import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.URL;
 
 @Component
-public class TorPageLoader implements PageLoader {
+public class SimplePageLoader implements PageLoader {
 
-    private int requestsPerIP;
-    private volatile int requestsMade;
+    private Proxy.Type proxyType;
+    private String proxyIp;
+    private Integer proxyPort;
     private int connectionTimeout;
-    private volatile boolean reInitCauseOfFail;
 
-    private Object lock = new Object();
-    private final int maxAttempts = 5;
+    private final int maxAttempts = 1;
 
     private final int BUFFER_SIZE = 1024;
 
-    private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(TorPageLoader.class);
-
-    @PostConstruct
-    private void init() {
-        TorProxyService.instance.establishTor();
-    }
-
+    private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(SimplePageLoader.class);
 
     @Override
     public String getPage(String urlString) {
@@ -41,25 +37,13 @@ public class TorPageLoader implements PageLoader {
             HttpURLConnection uc;
             URL url = new URL(urlString);
 
+            if (proxyType != null) {
+                Proxy proxy = new Proxy(proxyType, new InetSocketAddress(proxyIp, proxyPort));
 
-            synchronized (lock) {
-                if (requestsMade >= requestsPerIP || reInitCauseOfFail) {
-                    TorProxyService.instance.establishTor();
-                    requestsMade = 0;
-                    if (reInitCauseOfFail) {
-                        Thread.sleep(connectionTimeout);
-                    }
-                    reInitCauseOfFail = false;
-                }
+                uc = (HttpURLConnection) url.openConnection(proxy);
+            } else {
+                uc = (HttpURLConnection) url.openConnection();
             }
-
-            requestsMade++;
-
-            String proxyIp = TorProxyService.instance.getProxyIp();
-            int proxyPort = TorProxyService.instance.getProxyPort();
-            Proxy proxy = new Proxy(Proxy.Type.SOCKS, new InetSocketAddress(proxyIp, proxyPort));
-
-            uc = (HttpURLConnection) url.openConnection(proxy);
 
 
             uc.setConnectTimeout(connectionTimeout);
@@ -84,26 +68,19 @@ public class TorPageLoader implements PageLoader {
 
             return page.toString();
 
-        } catch (SocketException e) {
-            LOG.warn(String.format("Exception in page loader: %s", e.toString()));
-            reInitCauseOfFail = true;
-            return getPage(urlString, attempt);
-
-        } catch (SocketTimeoutException e) {
-            LOG.warn(String.format("Exception in page loader: %s", e.toString()));
-            if (attempt >= maxAttempts) {
-                LOG.warn(String.format("Failed to load item for url: %s. Exception: %s", urlString, e.toString()));
-                throw new RuntimeException(e);
-            }
-            return getPage(urlString, attempt + 1);
         } catch (IOException e) {
             LOG.warn(String.format("Exception in page loader: %s", e.toString()));
 
+            //handle 403? access denied error
+            if(e.toString().contains("Server returned HTTP response code: 403 for URL")){
+
+            }
+
             if (attempt >= maxAttempts) {
                 LOG.warn(String.format("Failed to load item for url: %s. Exception: %s", urlString, e.toString()));
                 throw new RuntimeException(e);
             }
-            reInitCauseOfFail = true;
+
             return getPage(urlString, attempt + 1);
         } catch (Exception e) {
             LOG.warn(String.format("Exception in page loader: %s", e.toString()));
@@ -113,9 +90,24 @@ public class TorPageLoader implements PageLoader {
         }
     }
 
-    @Required
-    public void setRequestsPerIP(int requestsPerIP) {
-        this.requestsPerIP = requestsPerIP;
+
+    public void setProxy(String proxy) { //format: 127.0.0.1:1080|socks5
+        try {
+            if (StringUtils.isNotEmpty(proxy)) {
+                String proxyTypeStr = proxy.split("\\|")[1];
+                if ("socks5".equals(proxyTypeStr) || "socks4".equals(proxyTypeStr)) {
+                    this.proxyType = Proxy.Type.SOCKS;
+                } else if ("http".equals(proxyTypeStr)) {
+                    this.proxyType = Proxy.Type.HTTP;
+                } else {
+                    throw new RuntimeException("Unknown proxy type. Allowed types: socks5, socks4, http");
+                }
+                this.proxyIp = proxy.split(":")[0];
+                this.proxyPort = Integer.parseInt(proxy.split("\\|")[0].split(":")[1]);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Was unable to parse proxy string", e);
+        }
     }
 
     @Required

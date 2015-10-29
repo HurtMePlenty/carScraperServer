@@ -15,11 +15,11 @@ public class CarsComSearchProcessor implements CarsSearchProcessor {
     private int threads;
     private boolean isFinished;
     private String searchUrl;
-    private TorPageLoader torPageLoader;
+    private PageLoader pageLoader;
     private CarsComPageProcessor carsComPageProcessor;
     private UserSearchQuery userSearchQuery;
     private volatile List<ResultItem> resultItemList = new CopyOnWriteArrayList<>();
-    private ExecutorService mainExecuter;
+    private ExecutorService mainExecutor;
     private Semaphore semaphore;
     private boolean isError = false;
     private Integer totalItemsExpected;
@@ -27,7 +27,7 @@ public class CarsComSearchProcessor implements CarsSearchProcessor {
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(CarsComSearchProcessor.class);
 
 
-    public CarsComSearchProcessor(int threads, UserSearchQuery userSearchQuery, AdditionalSearchParams additionalSearchParams, TorPageLoader torPageLoader) {
+    public CarsComSearchProcessor(int threads, UserSearchQuery userSearchQuery, AdditionalSearchParams additionalSearchParams, PageLoader pageLoader) {
         this.threads = threads;
         this.semaphore = new Semaphore(threads);
         this.userSearchQuery = userSearchQuery;
@@ -50,15 +50,15 @@ public class CarsComSearchProcessor implements CarsSearchProcessor {
 
         String searchUrl = carsComSearchRequestBuilder.renderUrl();
 
-        this.torPageLoader = torPageLoader;
-        this.carsComPageProcessor = new CarsComPageProcessor(torPageLoader);
+        this.pageLoader = pageLoader;
+        this.carsComPageProcessor = new CarsComPageProcessor(pageLoader);
 
         this.searchUrl = searchUrl;
     }
 
     public void startScraping(Consumer<CarsSearchProcessor> callback) {
         try {
-            String searchResult = torPageLoader.getPage(searchUrl);
+            String searchResult = pageLoader.getPage(searchUrl);
             Document doc = Jsoup.parse(searchResult);
 
             Elements totalItems = doc.select("h3.secondary");
@@ -73,14 +73,14 @@ public class CarsComSearchProcessor implements CarsSearchProcessor {
             boolean hasNextPage;
             do {
                 Elements carNodes = doc.select("div h4 a");
-                mainExecuter = Executors.newFixedThreadPool(threads);
+                mainExecutor = Executors.newFixedThreadPool(threads);
 
                 for (Element carNode : carNodes) {
                     String carUrl = carNode.attr("href");
 
                     semaphore.acquire();
 
-                    mainExecuter.execute(() -> {
+                    mainExecutor.execute(() -> {
                         System.out.println("item requested");
                         ResultItem resultItem = carsComPageProcessor.process("http://www.cars.com" + carUrl);
                         if (resultItem != null) {
@@ -93,8 +93,8 @@ public class CarsComSearchProcessor implements CarsSearchProcessor {
                     });
                 }
 
-                mainExecuter.shutdown();
-                mainExecuter.awaitTermination(600, TimeUnit.SECONDS);
+                mainExecutor.shutdown();
+                mainExecutor.awaitTermination(600, TimeUnit.SECONDS);
 
                 hasNextPage = false;
 
@@ -102,7 +102,7 @@ public class CarsComSearchProcessor implements CarsSearchProcessor {
                 if (nextPage.size() > 0) {
                     String href = nextPage.get(0).attr("href");
                     if (href != null && !href.contains("javascript:")) {
-                        String nextPageData = torPageLoader.getPage(href);
+                        String nextPageData = pageLoader.getPage(href);
                         doc = Jsoup.parse(nextPageData);
                         hasNextPage = true;
                     }

@@ -1,9 +1,8 @@
 package carScraperServer.scrapeEngine;
 
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
-public class CarsComSearchRequestBuilder {
-
+public class AutotraderRequestBuilder {
     private String makeId;
     private String modelId;
     private Long zipCode;
@@ -12,7 +11,8 @@ public class CarsComSearchRequestBuilder {
     private Double minPrice;
     private Double maxPrice;
 
-    private final String baseSearchUrl = "http://www.cars.com/for-sale/searchresults.action?searchSource=ADVANCED_SEARCH&rpp=250&stkTyp=U"; //stkTyp=U - used cars only
+
+    private final String baseSearchUrl = "http://www.autotrader.com/cars-for-sale/Used+Cars%s?listingType=used&listingTypes=used&numRecords=100";
     private StringBuilder combinedUrl = new StringBuilder();
 
 
@@ -23,32 +23,38 @@ public class CarsComSearchRequestBuilder {
         }
 
         combinedUrl.append(baseSearchUrl);
-        if (!StringUtils.isEmpty(makeId)) {
-            combinedUrl.append(String.format("&mkId=%s", makeId));
-        }
-        if (!StringUtils.isEmpty(modelId)) {
-            combinedUrl.append(String.format("&mdId=%s", modelId));
 
-        }
-        if (zipCode != null) {
-            combinedUrl.append(String.format("&zc=%d", zipCode));
+        if (StringUtils.isNotEmpty(makeId)) {
+            combinedUrl.append(String.format("&makeCode1=%s", makeId));
         }
 
-        combinedUrl.append(String.format("&rd=%d", radius));
+        if (StringUtils.isNotEmpty(modelId)) {
+            combinedUrl.append(String.format("&modelCode1=%s", modelId));
+        }
+
+        combinedUrl.append(String.format("&searchRadius=%d", radius));
 
         if (year != null) {
-            combinedUrl.append(String.format("&yrMn=%d&yrMx=%d", year, year));
+            combinedUrl.append(String.format("&startYear=%d&endYear=%d", year, year));
         }
 
         if (minPrice != null) {
-            combinedUrl.append(String.format("&prMn=%d", minPrice.intValue()));
+            combinedUrl.append(String.format("&minPrice==%d", minPrice.intValue()));
         }
 
         if (maxPrice != null) {
-            combinedUrl.append(String.format("&prMx=%d", maxPrice.intValue()));
+            combinedUrl.append(String.format("&maxPrice=%d", maxPrice.intValue()));
         }
 
-        return combinedUrl.toString();
+
+        String searchUrl = combinedUrl.toString();
+        if (zipCode != null) {
+            searchUrl = String.format(searchUrl, String.format("/%d", zipCode));
+        } else {
+            searchUrl = String.format(searchUrl, "");
+        }
+
+        return searchUrl;
     }
 
     public void setMakeId(String makeId) {

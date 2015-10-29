@@ -46,17 +46,26 @@ public class CarsScrapeService {
     TorPageLoader torPageLoader;
 
     @Autowired
+    SimplePageLoader simplePageLoader;
+
+    @Autowired
     MongoTemplate mongoTemplate;
 
     private Double priceSpread;
 
-    private final Map<UserSearchQuery, CarsSearchProcessor> tasks = new ConcurrentHashMap<>();
+    private final Map<UserSearchQuery, List<CarsSearchProcessor>> tasks = new ConcurrentHashMap<>();
 
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(CarsScrapeService.class);
 
     private ExecutorService taskRunner = Executors.newCachedThreadPool();
 
     private int maxThreads;
+
+    private boolean parallelSources;
+
+    private boolean carsComUseTor;
+
+    private boolean autotraderUseTor;
 
     public synchronized JsonResult execute(UserSearchQuery userSearchQuery) {
 
@@ -66,6 +75,8 @@ public class CarsScrapeService {
             LOG.info(String.format("Requested query is already in progress. Query: %s", queryToken));
             return renderResponse(tasks.get(userSearchQuery));
         }
+
+        tasks.put(userSearchQuery, new ArrayList<>());
 
 
         AdditionalSearchParams additionalSearchParams = new AdditionalSearchParams(priceSpread);
@@ -79,8 +90,10 @@ public class CarsScrapeService {
         }
 
         taskRunner.execute(() -> {
-            CarsComSearchProcessor carsComSearchProcessor = new CarsComSearchProcessor(maxThreads, userSearchQuery, additionalSearchParams, torPageLoader);
-            tasks.put(userSearchQuery, carsComSearchProcessor);
+            PageLoader pageLoader = carsComUseTor ? torPageLoader : simplePageLoader;
+            CarsComSearchProcessor carsComSearchProcessor = new CarsComSearchProcessor(maxThreads, userSearchQuery, additionalSearchParams, pageLoader);
+            tasks.get(userSearchQuery).add(carsComSearchProcessor);
+            //tasks.put(userSearchQuery, carsComSearchProcessor);
             LOG.info(String.format("Task started: %s", queryToken));
             carsComSearchProcessor.startScraping(this::taskFinished);
         });
@@ -136,12 +149,24 @@ public class CarsScrapeService {
             LOG.error(String.format("Error during data save: %s", e.toString()));
             throw new RuntimeException(e);
         } finally {
-            tasks.remove(userSearchQuery);
+            boolean hasTaskInProgress = tasks.get(userSearchQuery).stream().anyMatch((p) -> !p.isFinished());
+            if (!hasTaskInProgress) {
+                tasks.remove(userSearchQuery);
+            }
         }
     }
 
-    private JsonResult renderResponse(CarsSearchProcessor carsSearchProcessor) {
-        return new JsonDataResult(carsSearchProcessor.getResultItemList(), carsSearchProcessor.isFinished());
+    private JsonResult renderResponse(List<CarsSearchProcessor> carsSearchProcessors) {
+        List<ResultItem> resultItemList = new ArrayList<>();
+        boolean allTasksFinished = true;
+        for (CarsSearchProcessor carsSearchProcessor : carsSearchProcessors) {
+            if (!carsSearchProcessor.isFinished()) {
+                allTasksFinished = false;
+            }
+
+            resultItemList.addAll(carsSearchProcessor.getResultItemList());
+        }
+        return new JsonDataResult(resultItemList, allTasksFinished);
     }
 
     public JsonResult renderResponseFromDB(UserSearchQuery userSearchQuery) {
@@ -204,5 +229,20 @@ public class CarsScrapeService {
     @Required
     public void setPriceSpread(Double priceSpread) {
         this.priceSpread = priceSpread;
+    }
+
+    @Required
+    public void setParallelSources(boolean parallelSources) {
+        this.parallelSources = parallelSources;
+    }
+
+    @Required
+    public void setCarsComUseTor(boolean carsComUseTor) {
+        this.carsComUseTor = carsComUseTor;
+    }
+
+    @Required
+    public void setAutotraderUseTor(boolean autotraderUseTor) {
+        this.autotraderUseTor = autotraderUseTor;
     }
 }

@@ -39,6 +39,9 @@
     <bean id="carsScrapeService" class="carScraperServer.services.CarsScrapeService">
         <property name="maxThreads" value="${parallelThreads}"/>
         <property name="priceSpread" value="${searchPriceSpread}"/>
+        <property name="parallelSources" value="${parallelSources}"/>
+        <property name="autotraderUseTor" value="${autotraderUseTor}"/>
+        <property name="carsComUseTor" value="${carsComUseTor}"/>
     </bean>
 
     <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
@@ -49,7 +52,11 @@
     <bean id="torPageLoader" class="carScraperServer.scrapeEngine.TorPageLoader">
         <property name="requestsPerIP" value="${torRequestsPerIP}"/>
         <property name="connectionTimeout" value="${connectionTimeout}"/>
-        <property name="useTor" value="${useTor}"/>
+    </bean>
+
+    <bean id="simplePageLoader" class="carScraperServer.scrapeEngine.SimplePageLoader">
+        <property name="proxy" value="${simpleLoaderProxy}"/>
+        <property name="connectionTimeout" value="${connectionTimeout}"/>
     </bean>
 
 </beans>
