@@ -1,6 +1,7 @@
 package carScraperServer.scrapeEngine;
 
 import carScraperServer.entities.ResultItem;
+import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -22,10 +23,10 @@ public class CarsComSearchProcessor implements CarsSearchProcessor {
     private ExecutorService mainExecutor;
     private Semaphore semaphore;
     private boolean isError = false;
+    private boolean inProgress = true;
     private Integer totalItemsExpected;
 
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(CarsComSearchProcessor.class);
-
 
     public CarsComSearchProcessor(int threads, UserSearchQuery userSearchQuery, AdditionalSearchParams additionalSearchParams, PageLoader pageLoader) {
         this.threads = threads;
@@ -33,8 +34,19 @@ public class CarsComSearchProcessor implements CarsSearchProcessor {
         this.userSearchQuery = userSearchQuery;
 
         CarsComSearchRequestBuilder carsComSearchRequestBuilder = new CarsComSearchRequestBuilder();
-        carsComSearchRequestBuilder.setMakeId(CarsComSearchHelper.getMakeIdByName(userSearchQuery.getMake()));
-        carsComSearchRequestBuilder.setModelId(CarsComSearchHelper.getModelIdByName(userSearchQuery.getModel()));
+
+        String makeId = CarsComSearchHelper.getMakeIdByName(userSearchQuery.getMake());
+        if (StringUtils.isEmpty(makeId)) {
+            throw new RuntimeException(String.format("Can't find makeId for make %s", userSearchQuery.getMake()));
+        }
+
+        String modelId = CarsComSearchHelper.getModelIdByName(userSearchQuery.getModel());
+        if (StringUtils.isEmpty(makeId)) {
+            throw new RuntimeException(String.format("Can't find modelId for model %s", userSearchQuery.getModel()));
+        }
+
+        carsComSearchRequestBuilder.setMakeId(makeId);
+        carsComSearchRequestBuilder.setModelId(modelId);
         carsComSearchRequestBuilder.setZipCode(userSearchQuery.getZipCode());
         carsComSearchRequestBuilder.setYear(userSearchQuery.getYear());
 
@@ -58,6 +70,7 @@ public class CarsComSearchProcessor implements CarsSearchProcessor {
 
     public void startScraping(Consumer<CarsSearchProcessor> callback) {
         try {
+            inProgress = true;
             String searchResult = pageLoader.getPage(searchUrl);
             Document doc = Jsoup.parse(searchResult);
 
@@ -115,6 +128,7 @@ public class CarsComSearchProcessor implements CarsSearchProcessor {
             this.isError = true;
             throw new RuntimeException(e);
         } finally {
+            inProgress = false;
             isFinished = true;
             callback.accept(this);
         }
@@ -141,5 +155,10 @@ public class CarsComSearchProcessor implements CarsSearchProcessor {
 
     public boolean isError() {
         return isError;
+    }
+
+    @Override
+    public boolean isInProgress() {
+        return inProgress;
     }
 }

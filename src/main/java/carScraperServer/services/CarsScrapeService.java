@@ -76,8 +76,6 @@ public class CarsScrapeService {
             return renderResponse(tasks.get(userSearchQuery));
         }
 
-        tasks.put(userSearchQuery, new ArrayList<>());
-
 
         AdditionalSearchParams additionalSearchParams = new AdditionalSearchParams(priceSpread);
 
@@ -89,16 +87,44 @@ public class CarsScrapeService {
             return renderResponseFromDB(userSearchQuery);
         }
 
-        taskRunner.execute(() -> {
-            PageLoader pageLoader = carsComUseTor ? torPageLoader : simplePageLoader;
-            CarsComSearchProcessor carsComSearchProcessor = new CarsComSearchProcessor(maxThreads, userSearchQuery, additionalSearchParams, pageLoader);
-            tasks.get(userSearchQuery).add(carsComSearchProcessor);
-            //tasks.put(userSearchQuery, carsComSearchProcessor);
-            LOG.info(String.format("Task started: %s", queryToken));
-            carsComSearchProcessor.startScraping(this::taskFinished);
-        });
+        tasks.put(userSearchQuery, new ArrayList<>());
+
+        //prepare cars.com task
+        PageLoader pageLoader = carsComUseTor ? torPageLoader : simplePageLoader;
+        CarsComSearchProcessor carsComSearchProcessor = new CarsComSearchProcessor(maxThreads, userSearchQuery, additionalSearchParams, pageLoader);
+        tasks.get(userSearchQuery).add(carsComSearchProcessor);
+
+        //prepare autotrader.com task
+        pageLoader = autotraderUseTor ? torPageLoader : simplePageLoader;
+        AutotraderSearchProcessor autotraderSearchProcessor = new AutotraderSearchProcessor(maxThreads, userSearchQuery, additionalSearchParams, pageLoader);
+        tasks.get(userSearchQuery).add(autotraderSearchProcessor);
+
+        if (parallelSources) {
+            tasks.get(userSearchQuery).forEach(this::startExecuting);
+        } else {
+            executeNext(userSearchQuery);
+        }
 
         return new JsonDataResult(new ArrayList<>(), false);
+    }
+
+    private synchronized void executeNext(UserSearchQuery userSearchQuery) {
+        List<CarsSearchProcessor> processors = tasks.get(userSearchQuery);
+        if (processors == null) {
+            return;
+        }
+
+        CarsSearchProcessor processorToRun = processors.stream().filter(p -> !p.isInProgress()).findFirst().orElse(null);
+        if (processorToRun != null) {
+            startExecuting(processorToRun);
+        }
+    }
+
+    private void startExecuting(CarsSearchProcessor carsSearchProcessor) {
+        taskRunner.execute(() -> {
+            carsSearchProcessor.startScraping(this::taskFinished);
+            LOG.info(String.format("Task started: %s", carsSearchProcessor.getUserSearchQuery().getQueryToken()));
+        });
     }
 
     private synchronized void taskFinished(CarsSearchProcessor carsSearchProcessor) {
@@ -144,7 +170,9 @@ public class CarsScrapeService {
             searchQueryEntity.setDate(new Date());
             searchQueryEntity.setToken(userSearchQuery.getQueryToken());
             searchQueryRepository.save(searchQueryEntity);
-
+            if (!parallelSources) {
+                executeNext(userSearchQuery);
+            }
         } catch (Exception e) {
             LOG.error(String.format("Error during data save: %s", e.toString()));
             throw new RuntimeException(e);

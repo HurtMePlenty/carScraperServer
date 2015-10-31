@@ -49,7 +49,7 @@ public class AutotraderRequestBuilder {
 
         String searchUrl = combinedUrl.toString();
         if (zipCode != null) {
-            searchUrl = String.format(searchUrl, String.format("/%d", zipCode));
+            searchUrl = String.format(searchUrl, String.format("/New+York+NY-%d", zipCode));//New+York+NY is just a weird prefix. Zipcode works correctly
         } else {
             searchUrl = String.format(searchUrl, "");
         }

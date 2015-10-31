@@ -25,6 +25,9 @@ public class AutotraderPageProcessor {
     private Pattern trimPattern = Pattern.compile("\"trim\":\\[\"([^\"]+)\"\\]");
     private Pattern colorPattern = Pattern.compile("\"color\":\\[\"([^\"]+)\"\\]");
 
+    private Pattern imagePattern = Pattern.compile("src=\"([^\"]+)\"");
+
+
     AutotraderPageProcessor(PageLoader pageLoader) {
         this.pageLoader = pageLoader;
     }
@@ -92,6 +95,18 @@ public class AutotraderPageProcessor {
 
             resultItem.setTrim(trim);
             resultItem.setColor(color);
+
+            //images
+
+            elements = document.select(".eveMediaPanel noscript");
+            if (elements.size() > 0) {
+                String imagesBlock = elements.html();
+                Matcher imageMatcher = imagePattern.matcher(imagesBlock);
+                while (imageMatcher.find()) {
+                    resultItem.getImageUrls().add(imageMatcher.group(1));
+                }
+            }
+
 
             return resultItem;
         } catch (Exception e) {

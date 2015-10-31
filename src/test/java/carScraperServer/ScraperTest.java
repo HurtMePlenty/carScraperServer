@@ -37,6 +37,8 @@ public class ScraperTest {
     @Autowired
     SimplePageLoader simplePageLoader;
 
+    private final Object lock = new Object();
+    private boolean isFinished;
 
     @Test
     public void testScraper() {
@@ -67,31 +69,31 @@ public class ScraperTest {
         userSearchQuery.setModel("X3");
         userSearchQuery.setZipCode(92627);
 
-        Object lock = new Object();
-
         AdditionalSearchParams additionalSearchParams = new AdditionalSearchParams(1000.0);
 
-        AutotraderSearchProcessor autotraderSearchProcessor = new AutotraderSearchProcessor(1, userSearchQuery, additionalSearchParams, simplePageLoader);
+        AutotraderSearchProcessor autotraderSearchProcessor = new AutotraderSearchProcessor(10, userSearchQuery, additionalSearchParams, simplePageLoader);
         autotraderSearchProcessor.startScraping((processor) -> {
             List<ResultItem> resultItemList = processor.getResultItemList();
             System.out.println(String.format("Collected: %d", resultItemList.size()));
             synchronized (lock) {
                 lock.notifyAll();
+                isFinished = true;
             }
         });
         synchronized (lock) {
-            lock.wait();
+            while (!isFinished) {
+                lock.wait();
+            }
         }
-
     }
 
     @Test
     public void testDataFind() {
         UserSearchQuery userSearchQuery = new UserSearchQuery();
         userSearchQuery.setMake("BMW");
-        userSearchQuery.setYear(2011);
-        userSearchQuery.setModel("X3");
-        userSearchQuery.setZipCode(92626);
+        userSearchQuery.setYear(2013);
+        userSearchQuery.setModel("X5");
+        userSearchQuery.setZipCode(10006);
 
         JsonResult jsonResult = carsScrapeService.renderResponseFromDB(userSearchQuery);
         int a = 1;

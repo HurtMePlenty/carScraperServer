@@ -11,4 +11,5 @@ public interface CarsSearchProcessor {
     public UserSearchQuery getUserSearchQuery();
     public List<ResultItem> getResultItemList();
     public boolean isFinished();
+    public boolean isInProgress();
 }

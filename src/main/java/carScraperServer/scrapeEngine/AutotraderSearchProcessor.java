@@ -24,6 +24,7 @@ public class AutotraderSearchProcessor implements CarsSearchProcessor {
     private Semaphore semaphore;
     private boolean isError = false;
     private Integer totalItemsExpected;
+    private boolean inProgress;
 
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(AutotraderSearchProcessor.class);
 
@@ -32,9 +33,19 @@ public class AutotraderSearchProcessor implements CarsSearchProcessor {
         this.semaphore = new Semaphore(threads);
         this.userSearchQuery = userSearchQuery;
 
+        String makeId = AutotraderSearchHelper.getMakeIdByName(userSearchQuery.getMake());
+        if (StringUtils.isEmpty(makeId)) {
+            throw new RuntimeException(String.format("Can't find makeId for make %s", userSearchQuery.getMake()));
+        }
+
+        String modelId = AutotraderSearchHelper.getModelIdByName(userSearchQuery.getModel());
+        if (StringUtils.isEmpty(makeId)) {
+            throw new RuntimeException(String.format("Can't find modelId for model %s", userSearchQuery.getModel()));
+        }
+
         AutotraderRequestBuilder autotraderRequestBuilder = new AutotraderRequestBuilder();
-        autotraderRequestBuilder.setMakeId(AutotraderSearchHelper.getMakeIdByName(userSearchQuery.getMake()));
-        autotraderRequestBuilder.setModelId(AutotraderSearchHelper.getModelIdByName(userSearchQuery.getModel()));
+        autotraderRequestBuilder.setMakeId(makeId);
+        autotraderRequestBuilder.setModelId(modelId);
         autotraderRequestBuilder.setZipCode(userSearchQuery.getZipCode());
         autotraderRequestBuilder.setYear(userSearchQuery.getYear());
 
@@ -60,9 +71,8 @@ public class AutotraderSearchProcessor implements CarsSearchProcessor {
     public void startScraping(Consumer<CarsSearchProcessor> callback) {
         try {
 
+            inProgress = true;
             Document doc = loadSearchResultsPage(searchUrl);
-            //Elements carNodes = j_id_1_3wu_6
-
 
             Elements totalItems = doc.select("span.num-listings");
             String html = totalItems.get(0).html(); //always not empty because it's a condition in loadSearchResultPage method
@@ -102,6 +112,9 @@ public class AutotraderSearchProcessor implements CarsSearchProcessor {
                 mainExecutor.shutdown();
                 mainExecutor.awaitTermination(600, TimeUnit.SECONDS);
 
+                if (carNodes.size() < 100) {
+                    break;
+                }
 
                 int firstRecord = ++currentPage * 100 + 1; //use first record to navigate through pages
                 String nextPageUrl = String.format("%s&firstRecord=%d", searchUrl, firstRecord);
@@ -114,6 +127,7 @@ public class AutotraderSearchProcessor implements CarsSearchProcessor {
             this.isError = true;
             throw new RuntimeException(e);
         } finally {
+            inProgress = false;
             isFinished = true;
             callback.accept(this);
         }
@@ -122,7 +136,7 @@ public class AutotraderSearchProcessor implements CarsSearchProcessor {
     private Document loadSearchResultsPage(String url) throws InterruptedException {
         int currentAttempt = 0;
         while (currentAttempt < 3) {
-            String searchResult = pageLoader.getPage(searchUrl);
+            String searchResult = pageLoader.getPage(url);
             Document doc = Jsoup.parse(searchResult);
 
             Elements totalItems = doc.select("span.num-listings");
@@ -148,6 +162,11 @@ public class AutotraderSearchProcessor implements CarsSearchProcessor {
     @Override
     public boolean isFinished() {
         return this.isFinished;
+    }
+
+    @Override
+    public boolean isInProgress() {
+        return inProgress;
     }
 
     public boolean isError() {

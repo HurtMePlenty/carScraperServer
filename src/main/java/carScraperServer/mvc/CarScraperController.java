@@ -1,6 +1,7 @@
 package carScraperServer.mvc;
 
 import carScraperServer.httpresults.JsonResult;
+import carScraperServer.scrapeEngine.AutotraderSearchHelper;
 import carScraperServer.scrapeEngine.CarsComSearchHelper;
 import carScraperServer.scrapeEngine.UserSearchQuery;
 import carScraperServer.services.CarsScrapeService;
@@ -62,13 +63,18 @@ public class CarScraperController {
     @RequestMapping(value = "/showMakes", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public Set<String> showMakes() {
-        return CarsComSearchHelper.getMakesNames();
+        Set<String> totalSet = CarsComSearchHelper.getMakesNames();
+        totalSet.addAll(AutotraderSearchHelper.getMakesNames());
+        return totalSet;
     }
 
     @RequestMapping(value = "/showModels", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public Set<String> showModels() {
-        return CarsComSearchHelper.getModelNames();
+
+        Set<String> totalSet = CarsComSearchHelper.getModelNames();
+        totalSet.addAll(AutotraderSearchHelper.getModelNames());
+        return totalSet;
     }
 
    /* @RequestMapping(value = "", method = RequestMethod.GET)
