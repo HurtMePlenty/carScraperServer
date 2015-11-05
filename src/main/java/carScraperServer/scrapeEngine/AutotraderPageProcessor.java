@@ -46,7 +46,7 @@ public class AutotraderPageProcessor {
 
             resultItem.setUrl(url);
 
-            Elements elements = document.select("span#j_id_bd-j_id_181-j_id_1e3-j_id_1e5-j_id_1e6-j_id_1eq-j_id_1ey-vinInfoBlock");
+            Elements elements = document.select("span[id$=vinInfoBlock]");
             if (!elements.isEmpty()) {
                 resultItem.setVin(elements.get(0).html());
             }

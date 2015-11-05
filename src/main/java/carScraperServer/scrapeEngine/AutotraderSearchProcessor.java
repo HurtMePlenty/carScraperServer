@@ -85,7 +85,7 @@ public class AutotraderSearchProcessor implements CarsSearchProcessor {
 
             int currentPage = 0;
             while (true) {
-                Elements carNodes = doc.select("span#j_id_1_3wu_6 h2 a");
+                Elements carNodes = doc.select("div.listing-results h2 a");
                 if (carNodes.isEmpty()) {
                     break;
                 }
