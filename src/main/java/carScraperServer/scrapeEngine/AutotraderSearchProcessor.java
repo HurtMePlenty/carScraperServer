@@ -72,6 +72,7 @@ public class AutotraderSearchProcessor implements CarsSearchProcessor {
         try {
 
             inProgress = true;
+            LOG.info(String.format("Autotrader.com loading main searchUrl: %s", searchUrl));
             Document doc = loadSearchResultsPage(searchUrl);
 
             Elements totalItems = doc.select("span.num-listings");

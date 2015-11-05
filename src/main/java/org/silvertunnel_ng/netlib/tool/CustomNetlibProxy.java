@@ -32,6 +32,7 @@ public class CustomNetlibProxy {
     private static NetServerSocket netServerSocket;
     private static NetSocket upperLayerNetSocket;
     private static NetLayerIDs lowerLayerNetLayerId;
+    private static NetProxySingleConnectionThread netProxySingleConnectionThread;
     private static TorNetLayer torNetLayer;
 
 
@@ -60,6 +61,7 @@ public class CustomNetlibProxy {
             }
         }
 
+        started = true;
         // open server port
         try {
             // parse listen address and port
@@ -80,7 +82,7 @@ public class CustomNetlibProxy {
             }
             return;
         }
-        started = true;
+
 
         portOpenedCallback.run();
 
@@ -91,8 +93,9 @@ public class CustomNetlibProxy {
         try {
             while (!stopped) {
                 upperLayerNetSocket = netServerSocket.accept();
-                new NetProxySingleConnectionThread(upperLayerNetSocket,
-                        lowerLayerNetLayerId).start();
+                netProxySingleConnectionThread = new NetProxySingleConnectionThread(upperLayerNetSocket,
+                        lowerLayerNetLayerId);
+                netProxySingleConnectionThread.start();
             }
         } catch (final Exception e) {
             started = false;
@@ -123,6 +126,10 @@ public class CustomNetlibProxy {
             netServerSocket.close();
             //close NetSocket as well
             upperLayerNetSocket.close();
+
+            netProxySingleConnectionThread.clear();
+            netProxySingleConnectionThread.interrupt();
+
             //stop TOR
             SocksServerNetLayer socksServerNetLayer = (SocksServerNetLayer) NetFactory.getInstance().getNetLayerById(lowerLayerNetLayerId);
             Field lowerNetLayerField = SocksServerNetLayer.class.getDeclaredField("lowerNetLayer");
@@ -138,6 +145,7 @@ public class CustomNetlibProxy {
 
             tor.close(true);
             tor.clear();
+
 
             Thread.sleep(5000);
 
@@ -155,7 +163,8 @@ public class CustomNetlibProxy {
     public static void stopLeaking() {
         try {
             for (Thread thread : Thread.getAllStackTraces().keySet()) {
-                if (thread.getName().contains("Circuit") || thread.getName().contains("TLSDispatcher")) {
+                if (thread.getName().contains("Circuit") || thread.getName().contains("TLSDispatcher")
+                        || thread.getName().contains("NetProxySingleConnectionThread") || thread.getName().contains("DirectoryExecutorThread")) {
                     Class clazz = thread.getClass();
                     if (clazz.getSimpleName().equals("SocketTimeoutInputStreamThread")) {
                         for (Field field : clazz.getDeclaredFields()) {

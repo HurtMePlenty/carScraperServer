@@ -46,13 +46,15 @@ public class CarScraperController {
                                      @RequestParam String model,
                                      @RequestParam Integer year,
                                      @RequestParam Long zipcode,
-                                     @RequestParam(required = false) Double price) {
+                                     @RequestParam(required = false) Double price,
+                                     @RequestParam(required = false) String postDate) {
         UserSearchQuery userSearchQuery = new UserSearchQuery();
         userSearchQuery.setMake(make);
         userSearchQuery.setModel(model);
         userSearchQuery.setYear(year);
         userSearchQuery.setZipCode(zipcode);
         userSearchQuery.setPrice(price);
+        userSearchQuery.setPostDate(postDate);
 
         JsonResult result = carsScrapeService.execute(userSearchQuery);
         //Result res = new Result();
@@ -74,6 +76,14 @@ public class CarScraperController {
 
         Set<String> totalSet = CarsComSearchHelper.getModelNames();
         totalSet.addAll(AutotraderSearchHelper.getModelNames());
+        return totalSet;
+    }
+
+    @RequestMapping(value = "/showPostDates", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public Set<String> showPostDates() {
+
+        Set<String> totalSet = CarsComSearchHelper.getPostDates();
         return totalSet;
     }
 

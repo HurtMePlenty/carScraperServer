@@ -8,8 +8,16 @@ public class CarsComSearchHelper {
 
     private static final Map<String, String> makesMap = new HashMap<>();
     private static final Map<String, String> modelsMap = new HashMap<>();
+    private static final Map<String, String> postDateMap = new HashMap<>();
 
     static {
+
+        postDateMap.put("1day", "28882");
+        postDateMap.put("3days", "28883");
+        postDateMap.put("7days", "28884");
+        postDateMap.put("2weeks", "28885");
+        postDateMap.put("month", "28442");
+
 
         //makes
         makesMap.put("all makes", "");
@@ -1039,7 +1047,7 @@ public class CarsComSearchHelper {
         modelsMap.put("zdx", "32888");
         modelsMap.put("zephyr", "22336");
         modelsMap.put("zx2", "22335");
-      
+
     }
 
     public static String getMakeIdByName(String name) {
@@ -1050,11 +1058,19 @@ public class CarsComSearchHelper {
         return modelsMap.get(name.toLowerCase());
     }
 
+    public static String getPostDateCodeByName(String postDate) {
+        return postDate == null ? null : postDateMap.get(postDate.toLowerCase());
+    }
+
     public static Set<String> getMakesNames() {
         return makesMap.keySet();
     }
 
     public static Set<String> getModelNames() {
         return modelsMap.keySet();
+    }
+
+    public static Set<String> getPostDates() {
+        return postDateMap.keySet();
     }
 }

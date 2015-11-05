@@ -6,6 +6,7 @@ public class UserSearchQuery {
     private Double price;
     private Integer year;
     private Long zipCode;
+    private String postDate;
 
     public String getMake() {
         return make;
@@ -51,6 +52,15 @@ public class UserSearchQuery {
         return toString();
     }
 
+    public String getPostDate() {
+        return postDate;
+    }
+
+    public void setPostDate(String postDate) {
+        this.postDate = postDate;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -60,6 +70,7 @@ public class UserSearchQuery {
 
         if (make != null ? !make.equals(that.make) : that.make != null) return false;
         if (model != null ? !model.equals(that.model) : that.model != null) return false;
+        if (postDate != null ? !postDate.equals(that.postDate) : that.postDate != null) return false;
         if (price != null ? !price.equals(that.price) : that.price != null) return false;
         if (year != null ? !year.equals(that.year) : that.year != null) return false;
         if (zipCode != null ? !zipCode.equals(that.zipCode) : that.zipCode != null) return false;
@@ -74,9 +85,9 @@ public class UserSearchQuery {
         result = 31 * result + (price != null ? price.hashCode() : 0);
         result = 31 * result + (year != null ? year.hashCode() : 0);
         result = 31 * result + (zipCode != null ? zipCode.hashCode() : 0);
+        result = 31 * result + (postDate != null ? postDate.hashCode() : 0);
         return result;
     }
-
 
     @Override
     public String toString() {
@@ -86,6 +97,7 @@ public class UserSearchQuery {
                 ", price=" + price +
                 ", year=" + year +
                 ", zipCode=" + zipCode +
+                ", postDate='" + postDate + '\'' +
                 '}';
     }
 }

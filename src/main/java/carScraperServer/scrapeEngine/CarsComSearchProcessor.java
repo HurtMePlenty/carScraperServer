@@ -45,10 +45,13 @@ public class CarsComSearchProcessor implements CarsSearchProcessor {
             throw new RuntimeException(String.format("Can't find modelId for model %s", userSearchQuery.getModel()));
         }
 
+        String postDateCode = CarsComSearchHelper.getPostDateCodeByName(userSearchQuery.getPostDate());
+
         carsComSearchRequestBuilder.setMakeId(makeId);
         carsComSearchRequestBuilder.setModelId(modelId);
         carsComSearchRequestBuilder.setZipCode(userSearchQuery.getZipCode());
         carsComSearchRequestBuilder.setYear(userSearchQuery.getYear());
+        carsComSearchRequestBuilder.setPostDateCode(postDateCode);
 
         if (userSearchQuery.getPrice() != null) {
             Double maxPrice = userSearchQuery.getPrice() + additionalSearchParams.getPriceSpread();
@@ -71,6 +74,7 @@ public class CarsComSearchProcessor implements CarsSearchProcessor {
     public void startScraping(Consumer<CarsSearchProcessor> callback) {
         try {
             inProgress = true;
+            LOG.info(String.format("Cars.com loading main searchUrl: %s", searchUrl));
             String searchResult = pageLoader.getPage(searchUrl);
             Document doc = Jsoup.parse(searchResult);
 
