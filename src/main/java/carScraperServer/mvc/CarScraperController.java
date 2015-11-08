@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.ServletContext;
+import java.util.HashSet;
 import java.util.Set;
 
 @Controller
@@ -65,18 +66,19 @@ public class CarScraperController {
     @RequestMapping(value = "/showMakes", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public Set<String> showMakes() {
-        Set<String> totalSet = CarsComSearchHelper.getMakesNames();
-        totalSet.addAll(AutotraderSearchHelper.getMakesNames());
-        return totalSet;
+        Set<String> result = new HashSet<>();
+        result.addAll(CarsComSearchHelper.getMakesNames());
+        result.addAll(AutotraderSearchHelper.getMakesNames());
+        return result;
     }
 
     @RequestMapping(value = "/showModels", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public Set<String> showModels() {
-
-        Set<String> totalSet = CarsComSearchHelper.getModelNames();
-        totalSet.addAll(AutotraderSearchHelper.getModelNames());
-        return totalSet;
+        Set<String> result = new HashSet<>();
+        result.addAll(CarsComSearchHelper.getModelNames());
+        result.addAll(AutotraderSearchHelper.getModelNames());
+        return result;
     }
 
     @RequestMapping(value = "/showPostDates", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)

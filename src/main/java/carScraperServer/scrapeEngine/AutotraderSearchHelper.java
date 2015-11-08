@@ -61,7 +61,7 @@ public class AutotraderSearchHelper {
         makesMap.put("pontiac", "PONT");
         makesMap.put("porsche", "POR");
         makesMap.put("ram", "RAM");
-        makesMap.put("rolls-Royce", "RR");
+        makesMap.put("rolls-royce", "RR");
         makesMap.put("saab", "SAAB");
         makesMap.put("saturn", "SATURN");
         makesMap.put("scion", "SCION");
@@ -436,7 +436,7 @@ public class AutotraderSearchHelper {
         modelsMap.put("pt cruiser", "PTCRUIS");
         modelsMap.put("sebring", "CHRYSEB");
         modelsMap.put("tc by maserati", "CHRYTC");
-        modelsMap.put("town &amp; country", "TANDC");
+        modelsMap.put("town & country", "TANDC");
         modelsMap.put("voyager", "VOYAGER");
         modelsMap.put("other chrysler models", "CHOTH");
         modelsMap.put("lanos", "LANOS");
