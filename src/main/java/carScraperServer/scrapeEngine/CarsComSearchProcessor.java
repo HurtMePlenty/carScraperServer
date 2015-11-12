@@ -26,6 +26,8 @@ public class CarsComSearchProcessor implements CarsSearchProcessor {
     private boolean inProgress = true;
     private Integer totalItemsExpected;
 
+    private boolean isInitializedCorrectly;
+
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(CarsComSearchProcessor.class);
 
     public CarsComSearchProcessor(int threads, UserSearchQuery userSearchQuery, AdditionalSearchParams additionalSearchParams, PageLoader pageLoader) {
@@ -37,12 +39,16 @@ public class CarsComSearchProcessor implements CarsSearchProcessor {
 
         String makeId = CarsComSearchHelper.getMakeIdByName(userSearchQuery.getMake());
         if (StringUtils.isEmpty(makeId)) {
-            throw new RuntimeException(String.format("Can't find makeId for make %s", userSearchQuery.getMake()));
+            LOG.info(String.format("MakeId wasn't found for make %s", userSearchQuery.getMake()));
+            isInitializedCorrectly = false;
+            return;
         }
 
         String modelId = CarsComSearchHelper.getModelIdByName(userSearchQuery.getModel());
         if (StringUtils.isEmpty(makeId)) {
-            throw new RuntimeException(String.format("Can't find modelId for model %s", userSearchQuery.getModel()));
+            LOG.info(String.format("ModelId wasn't found for model %s", userSearchQuery.getModel()));
+            isInitializedCorrectly = false;
+            return;
         }
 
         String postDateCode = CarsComSearchHelper.getPostDateCodeByName(userSearchQuery.getPostDate());
@@ -69,10 +75,15 @@ public class CarsComSearchProcessor implements CarsSearchProcessor {
         this.carsComPageProcessor = new CarsComPageProcessor(pageLoader);
 
         this.searchUrl = searchUrl;
+        this.isInitializedCorrectly = true;
     }
 
     public void startScraping(Consumer<CarsSearchProcessor> callback) {
         try {
+            if (!isInitializedCorrectly) {
+                LOG.info("Wasn't initialized correctly. Scraping wasn't started.");
+                return;
+            }
             inProgress = true;
             LOG.info(String.format("Cars.com loading main searchUrl: %s", searchUrl));
             String searchResult = pageLoader.getPage(searchUrl);

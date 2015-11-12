@@ -26,6 +26,8 @@ public class AutotraderSearchProcessor implements CarsSearchProcessor {
     private Integer totalItemsExpected;
     private boolean inProgress;
 
+    private boolean isInitializedCorrectly;
+
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(AutotraderSearchProcessor.class);
 
     public AutotraderSearchProcessor(int threads, UserSearchQuery userSearchQuery, AdditionalSearchParams additionalSearchParams, PageLoader pageLoader) {
@@ -35,12 +37,16 @@ public class AutotraderSearchProcessor implements CarsSearchProcessor {
 
         String makeId = AutotraderSearchHelper.getMakeIdByName(userSearchQuery.getMake());
         if (StringUtils.isEmpty(makeId)) {
-            throw new RuntimeException(String.format("Can't find makeId for make %s", userSearchQuery.getMake()));
+            LOG.info(String.format("MakeId wasn't found for make %s", userSearchQuery.getMake()));
+            this.isInitializedCorrectly = false;
+            return;
         }
 
         String modelId = AutotraderSearchHelper.getModelIdByName(userSearchQuery.getModel());
         if (StringUtils.isEmpty(makeId)) {
-            throw new RuntimeException(String.format("Can't find modelId for model %s", userSearchQuery.getModel()));
+            LOG.info(String.format("ModelId wasn't found for model %s", userSearchQuery.getModel()));
+            this.isInitializedCorrectly = false;
+            return;
         }
 
         AutotraderRequestBuilder autotraderRequestBuilder = new AutotraderRequestBuilder();
@@ -65,12 +71,16 @@ public class AutotraderSearchProcessor implements CarsSearchProcessor {
         this.autotraderPageProcessor = new AutotraderPageProcessor(pageLoader);
 
         this.searchUrl = searchUrl;
+        this.isInitializedCorrectly = true;
     }
 
     @Override
     public void startScraping(Consumer<CarsSearchProcessor> callback) {
         try {
-
+            if (!isInitializedCorrectly) {
+                LOG.info("Wasn't initialized correctly. Scraping wasn't started.");
+                return;
+            }
             inProgress = true;
             LOG.info(String.format("Autotrader.com loading main searchUrl: %s", searchUrl));
             Document doc = loadSearchResultsPage(searchUrl);

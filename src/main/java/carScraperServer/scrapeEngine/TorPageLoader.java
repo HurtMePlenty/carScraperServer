@@ -67,11 +67,11 @@ public class TorPageLoader implements PageLoader {
             uc.connect();
 
             StringBuilder page = new StringBuilder();
-            String line;
+
             BufferedReader in = new BufferedReader(new InputStreamReader(uc.getInputStream()));
-            while ((line = in.readLine()) != null) {
+            /*while ((line = in.readLine()) != null) {
                 page.append(line).append("\n");
-            }
+            }*/
 
 
             char[] buffer = new char[BUFFER_SIZE]; // or some other size,
