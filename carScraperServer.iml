@@ -30,53 +30,6 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module-library">
-      <library name="Gradle: netlib-0.0.4-javadoc">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/libs/netlib-0.0.4-javadoc.jar!/" />
-          <root url="jar://$MODULE_DIR$/libs/netlib-0.0.4-javadoc.jar!/" />
-          <root url="jar://$MODULE_DIR$/libs/netlib-0.0.4-javadoc.jar!/" />
-          <root url="jar://$MODULE_DIR$/libs/netlib-0.0.4-javadoc.jar!/" />
-          <root url="jar://$MODULE_DIR$/libs/netlib-0.0.4-javadoc.jar!/" />
-          <root url="jar://$MODULE_DIR$/libs/netlib-0.0.4-javadoc.jar!/" />
-          <root url="jar://$MODULE_DIR$/libs/netlib-0.0.4-javadoc.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library name="Gradle: netlib-0.0.4-sources">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/libs/netlib-0.0.4-sources.jar!/" />
-          <root url="jar://$MODULE_DIR$/libs/netlib-0.0.4-sources.jar!/" />
-          <root url="jar://$MODULE_DIR$/libs/netlib-0.0.4-sources.jar!/" />
-          <root url="jar://$MODULE_DIR$/libs/netlib-0.0.4-sources.jar!/" />
-          <root url="jar://$MODULE_DIR$/libs/netlib-0.0.4-sources.jar!/" />
-          <root url="jar://$MODULE_DIR$/libs/netlib-0.0.4-sources.jar!/" />
-          <root url="jar://$MODULE_DIR$/libs/netlib-0.0.4-sources.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library name="Gradle: netlib-0.0.4">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/libs/netlib-0.0.4.jar!/" />
-          <root url="jar://$MODULE_DIR$/libs/netlib-0.0.4.jar!/" />
-          <root url="jar://$MODULE_DIR$/libs/netlib-0.0.4.jar!/" />
-          <root url="jar://$MODULE_DIR$/libs/netlib-0.0.4.jar!/" />
-          <root url="jar://$MODULE_DIR$/libs/netlib-0.0.4.jar!/" />
-          <root url="jar://$MODULE_DIR$/libs/netlib-0.0.4.jar!/" />
-          <root url="jar://$MODULE_DIR$/libs/netlib-0.0.4.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES>
-          <root url="jar://$MODULE_DIR$/libs/netlib-0.0.4-sources.jar!/" />
-        </SOURCES>
-      </library>
-    </orderEntry>
     <orderEntry type="library" name="Gradle: org.jsoup:jsoup:1.7.2" level="project" />
     <orderEntry type="library" name="Gradle: org.apache.commons:commons-lang3:3.4" level="project" />
     <orderEntry type="library" name="Gradle: org.seleniumhq.selenium:selenium-java:2.47.2" level="project" />
@@ -146,5 +99,23 @@
     <orderEntry type="library" name="Gradle: com.fasterxml.jackson.core:jackson-core:2.6.1" level="project" />
     <orderEntry type="library" name="Gradle: com.fasterxml.jackson.core:jackson-databind:2.6.1" level="project" />
     <orderEntry type="library" name="Gradle: com.fasterxml.jackson.core:jackson-annotations:2.6.0" level="project" />
+    <orderEntry type="library" name="Gradle: org.springframework.data:spring-data-jpa:1.9.0.RELEASE" level="project" />
+    <orderEntry type="library" name="Gradle: org.hibernate:hibernate-entitymanager:5.0.3.Final" level="project" />
+    <orderEntry type="library" name="Gradle: org.postgresql:postgresql:9.4-1205-jdbc42" level="project" />
+    <orderEntry type="library" name="Gradle: org.springframework:spring-orm:4.1.7.RELEASE" level="project" />
+    <orderEntry type="library" name="Gradle: org.aspectj:aspectjrt:1.8.6" level="project" />
+    <orderEntry type="library" name="Gradle: org.jboss.logging:jboss-logging:3.3.0.Final" level="project" />
+    <orderEntry type="library" name="Gradle: org.hibernate:hibernate-core:5.0.3.Final" level="project" />
+    <orderEntry type="library" name="Gradle: dom4j:dom4j:1.6.1" level="project" />
+    <orderEntry type="library" name="Gradle: org.hibernate.common:hibernate-commons-annotations:5.0.0.Final" level="project" />
+    <orderEntry type="library" name="Gradle: org.hibernate.javax.persistence:hibernate-jpa-2.1-api:1.0.0.Final" level="project" />
+    <orderEntry type="library" name="Gradle: org.apache.geronimo.specs:geronimo-jta_1.1_spec:1.1.1" level="project" />
+    <orderEntry type="library" name="Gradle: org.javassist:javassist:3.18.1-GA" level="project" />
+    <orderEntry type="library" name="Gradle: org.springframework:spring-jdbc:4.1.7.RELEASE" level="project" />
+    <orderEntry type="library" name="Gradle: antlr:antlr:2.7.7" level="project" />
+    <orderEntry type="library" name="Gradle: org.jboss:jandex:2.0.0.CR1" level="project" />
+    <orderEntry type="library" name="Gradle: org.quartz-scheduler:quartz:2.2.1" level="project" />
+    <orderEntry type="library" name="Gradle: c3p0:c3p0:0.9.1.1" level="project" />
+    <orderEntry type="library" name="Gradle: log4j:log4j:1.2.16" level="project" />
   </component>
 </module>

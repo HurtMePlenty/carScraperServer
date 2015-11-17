@@ -1,4 +1,4 @@
-package carScraperServer.mvc;
+package carScraperServer.mvc.controllers;
 
 import carScraperServer.httpresults.JsonResult;
 import carScraperServer.scrapeEngine.AutotraderSearchHelper;
