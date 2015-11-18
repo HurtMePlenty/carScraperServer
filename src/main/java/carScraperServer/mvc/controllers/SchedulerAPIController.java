@@ -28,6 +28,8 @@ public class SchedulerAPIController {
             return new SchedulerJSonResult(error, true);
         }
 
+        scheduledTaskService.saveScheduledTask(scheduledTaskRequest);
+
         return new SchedulerJSonResult("Task was successfully added");
     }
 

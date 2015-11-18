@@ -4,6 +4,8 @@
        xmlns:mvc="http://www.springframework.org/schema/mvc"
        xmlns:mongo="http://www.springframework.org/schema/data/mongo"
        xmlns:jpa="http://www.springframework.org/schema/data/jpa"
+       xmlns:util="http://www.springframework.org/schema/util"
+
        xsi:schemaLocation="http://www.springframework.org/schema/beans
        http://www.springframework.org/schema/beans/spring-beans.xsd
        http://www.springframework.org/schema/context
@@ -13,13 +15,28 @@
        http://www.springframework.org/schema/mvc
 	   http://www.springframework.org/schema/mvc/spring-mvc.xsd
 	   http://www.springframework.org/schema/data/jpa
-	   http://www.springframework.org/schema/data/jpa/spring-jpa.xsd"
+	   http://www.springframework.org/schema/data/jpa/spring-jpa.xsd
+	   http://www.springframework.org/schema/util
+	   http://www.springframework.org/schema/util/spring-util.xsd"
         >
 
 
     <context:component-scan base-package="carScraperServer"/>
 
-    <context:property-placeholder location="/WEB-INF/config.properties"/>
+    <bean id="placeholderConfig" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="ignoreResourceNotFound" value="true"/>
+        <property name="searchSystemEnvironment" value="true"/>
+        <property name="systemPropertiesMode">
+            <util:constant
+                    static-field="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer.SYSTEM_PROPERTIES_MODE_OVERRIDE"/>
+        </property>
+        <property name="locations">
+            <list>
+                <value>/WEB-INF/config.properties</value>
+                <value>file:${CAR_SCRAPER_CONFIG}</value>
+            </list>
+        </property>
+    </bean>
 
     <mvc:annotation-driven>
         <mvc:message-converters>

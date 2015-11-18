@@ -35,9 +35,9 @@ public class ScheduledTaskService {
         scheduledTask.setSource(scheduledTaskRequest.getSource());
         scheduledTask.setSourceID(scheduledTaskRequest.getSourceId());
 
-        schedulerService.addTask(scheduledTask);
+        scheduledTaskRepository.save(scheduledTask);
 
-        //scheduledTaskRepository.save(scheduledTask);
+        schedulerService.addTask(scheduledTask);
     }
 
     public void saveScheduledTask(ScheduledTask scheduledTask) {
