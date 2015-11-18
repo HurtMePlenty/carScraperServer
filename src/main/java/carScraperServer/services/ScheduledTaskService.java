@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class ScheduledTaskService {
@@ -30,20 +31,22 @@ public class ScheduledTaskService {
         scheduledTask.setFrequency(Integer.parseInt(scheduledTaskRequest.getFrequency()));
         scheduledTask.setExpirationDate(new Date(Long.parseLong(scheduledTaskRequest.getExpirationDate())));
         scheduledTask.setDealerId(scheduledTaskRequest.getDealerId());
-        scheduledTask.setLocationID(scheduledTaskRequest.getLocationID());
+        scheduledTask.setLocationID(scheduledTaskRequest.getLocationId());
         scheduledTask.setSource(scheduledTaskRequest.getSource());
-        scheduledTask.setSourceID(scheduledTaskRequest.getSourceID());
+        scheduledTask.setSourceID(scheduledTaskRequest.getSourceId());
 
         schedulerService.addTask(scheduledTask);
 
         //scheduledTaskRepository.save(scheduledTask);
     }
 
-    private void addToScheduler(ScheduledTask scheduledTask)
-    {
-
+    public void saveScheduledTask(ScheduledTask scheduledTask) {
+        scheduledTaskRepository.save(scheduledTask);
     }
 
+    public List<ScheduledTask> findAllUnexpiredTasks() {
+        return scheduledTaskRepository.findTasksByExpirationDateGreaterThan(new Date());
+    }
 }
 
 

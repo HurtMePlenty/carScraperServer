@@ -30,12 +30,18 @@ public class ScheduleTaskTest {
         Date now = new Date();
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(now);
-        Date startDate = new Date(calendar.getTimeInMillis() + 60 * 1000);
-        Date endDate = new Date(calendar.getTimeInMillis() + 2 * 24 * 60 * 60 * 1000);
+        //Date startDate = new Date(calendar.getTimeInMillis() + 60 * 1000);
+
+        long startTime = calendar.getTimeInMillis() + 1 * 60 * 1000;
+        startTime = startTime - 3 * 24 * 60 * 60 * 1000;
+
+        Date startDate = new Date(startTime);
+        Date endDate = new Date(calendar.getTimeInMillis() + 3 * 24 * 60 * 60 * 1000);
         scheduledTaskRequest.setStartDate(String.valueOf(startDate.getTime()));
         scheduledTaskRequest.setExpirationDate(String.valueOf(endDate.getTime()));
 
-        scheduledTaskRequest.setFrequency("1");
+
+        scheduledTaskRequest.setFrequency("3");
         scheduledTaskRequest.setTextEmailBoth("1");
 
         scheduledTaskService.saveScheduledTask(scheduledTaskRequest);
@@ -43,5 +49,10 @@ public class ScheduleTaskTest {
         Thread.sleep(100000000);
     }
 
+
+    @Test
+    public void testExistingTasks() throws InterruptedException {
+        Thread.sleep(100000000);
+    }
 
 }

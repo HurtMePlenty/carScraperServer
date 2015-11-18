@@ -25,6 +25,12 @@ public class ScheduledTask {
     private String source;
     private String sourceID;
     private Date lastExecutionDate;
+    private int totalExecutedTimes;
+
+    public void executed(Date executionDate){
+        this.lastExecutionDate = executionDate;
+        this.totalExecutedTimes++;
+    }
 
     public Long getId() {
         return id;
@@ -130,27 +136,24 @@ public class ScheduledTask {
         return lastExecutionDate;
     }
 
-    public void setLastExecutionDate(Date lastExecutionDate) {
-        this.lastExecutionDate = lastExecutionDate;
-    }
-
     @Override
     public String toString() {
         return "ScheduledTask{" +
-                "lastExecutionDate=" + lastExecutionDate +
-                ", sourceID='" + sourceID + '\'' +
-                ", source='" + source + '\'' +
-                ", locationID='" + locationID + '\'' +
-                ", dealerId='" + dealerId + '\'' +
-                ", expirationDate=" + expirationDate +
-                ", frequency=" + frequency +
-                ", emailFrom='" + emailFrom + '\'' +
-                ", emailTo='" + emailTo + '\'' +
-                ", cell='" + cell + '\'' +
-                ", textEmailBoth=" + textEmailBoth +
-                ", message='" + message + '\'' +
+                "id=" + id +
                 ", startDate=" + startDate +
-                ", id=" + id +
+                ", message='" + message + '\'' +
+                ", textEmailBoth=" + textEmailBoth +
+                ", cell='" + cell + '\'' +
+                ", emailTo='" + emailTo + '\'' +
+                ", emailFrom='" + emailFrom + '\'' +
+                ", frequency=" + frequency +
+                ", expirationDate=" + expirationDate +
+                ", dealerId='" + dealerId + '\'' +
+                ", locationID='" + locationID + '\'' +
+                ", source='" + source + '\'' +
+                ", sourceID='" + sourceID + '\'' +
+                ", lastExecutionDate=" + lastExecutionDate +
+                ", totalExecutedTimes=" + totalExecutedTimes +
                 '}';
     }
 }

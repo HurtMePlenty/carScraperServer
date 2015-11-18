@@ -12,9 +12,9 @@ public class ScheduledTaskRequest {
     private String frequency;
     private String expirationDate;
     private String dealerId;
-    private String locationID;
+    private String locationId;
     private String source;
-    private String sourceID;
+    private String sourceId;
 
     public String validate() {
         if (StringUtils.isEmpty(startDate)) {
@@ -53,16 +53,16 @@ public class ScheduledTaskRequest {
             return "dealerId param is empty";
         }
 
-        if (StringUtils.isEmpty(locationID)) {
-            return "locationID param is empty";
+        if (StringUtils.isEmpty(locationId)) {
+            return "locationId param is empty";
         }
 
         if (StringUtils.isEmpty(source)) {
             return "source param is empty";
         }
 
-        if (StringUtils.isEmpty(sourceID)) {
-            return "sourceID param is empty";
+        if (StringUtils.isEmpty(sourceId)) {
+            return "sourceId param is empty";
         }
         return null;
     }
@@ -139,12 +139,12 @@ public class ScheduledTaskRequest {
         this.dealerId = dealerId;
     }
 
-    public String getLocationID() {
-        return locationID;
+    public String getLocationId() {
+        return locationId;
     }
 
-    public void setLocationID(String locationID) {
-        this.locationID = locationID;
+    public void setLocationId(String locationId) {
+        this.locationId = locationId;
     }
 
     public String getSource() {
@@ -155,11 +155,11 @@ public class ScheduledTaskRequest {
         this.source = source;
     }
 
-    public String getSourceID() {
-        return sourceID;
+    public String getSourceId() {
+        return sourceId;
     }
 
-    public void setSourceID(String sourceID) {
-        this.sourceID = sourceID;
+    public void setSourceId(String sourceId) {
+        this.sourceId = sourceId;
     }
 }
