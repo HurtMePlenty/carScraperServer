@@ -33,7 +33,7 @@ public class TorTest {
         for (int i = 0; i < 99999; i++) {
             String page = torPageLoader.getPage("http://whoer.net");
             Document doc = Jsoup.parse(page);
-            String myIp = doc.select("#remote_addr").get(0).html();
+            String myIp = doc.select("strong.your-ip").get(0).html();
             System.out.println(myIp);
             System.out.println(++successfullConnection);
             System.out.println(String.format("Threads before stop: %d", Thread.getAllStackTraces().keySet().size()));

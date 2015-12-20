@@ -25,6 +25,7 @@ public class ResultItem {
     private List<Long> zipcodeList = new ArrayList<>();
     private Date date;
     private List<String> imageUrls = new ArrayList<>();
+    private String source;
 
     public ResultItem() {
 
@@ -132,5 +133,13 @@ public class ResultItem {
 
     public void setImageUrls(List<String> imageUrls) {
         this.imageUrls = imageUrls;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
     }
 }

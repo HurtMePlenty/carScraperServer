@@ -107,7 +107,7 @@ public class AutotraderPageProcessor {
                 }
             }
 
-
+            resultItem.setSource("autotradercom");
             return resultItem;
         } catch (Exception e) {
             LOG.warn(String.format("Failed to load item with url %s \n Exception: %s", url, e.toString()));

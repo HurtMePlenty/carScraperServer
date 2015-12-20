@@ -5,13 +5,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Component;
 
-import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 public class SimplePageLoader implements PageLoader {
@@ -29,50 +31,68 @@ public class SimplePageLoader implements PageLoader {
 
     @Override
     public String getPage(String urlString) {
-        return getPage(urlString, 0);
+        return getPage(urlString, null, null, 0);
     }
 
-    private String getPage(String urlString, int attempt) {
+    @Override
+    public String postPage(String urlString, Map<String, String> data, Map<String, String> headers) {
+        return getPage(urlString, data, headers, 0);
+    }
+
+    private String getPage(String urlString, Map<String, String> data, Map<String, String> headers, int attempt) {
         try {
-            HttpURLConnection uc;
-            URL url = new URL(urlString);
 
-            if (proxyType != null) {
-                Proxy proxy = new Proxy(proxyType, new InetSocketAddress(proxyIp, proxyPort));
+            URL obj = new URL(urlString);
+            HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
-                uc = (HttpURLConnection) url.openConnection(proxy);
-            } else {
-                uc = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("GET");
+
+            if (headers != null) {
+                for (String header : headers.keySet()) {
+                    con.setRequestProperty(header, headers.get(header));
+                }
             }
 
+            if (data != null) {
+                con.setRequestMethod("POST");
+                con.setDoInput(true);
+                con.setDoOutput(true);
 
-            uc.setConnectTimeout(connectionTimeout);
-            uc.setReadTimeout(connectionTimeout);
-            uc.connect();
-
-            StringBuilder page = new StringBuilder();
-            String line;
-            BufferedReader in = new BufferedReader(new InputStreamReader(uc.getInputStream()));
-            while ((line = in.readLine()) != null) {
-                page.append(line).append("\n");
+                DataOutputStream out = new DataOutputStream(con.getOutputStream());
+                StringBuilder query = new StringBuilder();
+                for (String key : data.keySet()) {
+                    String value = data.get(key);
+                    query.append(String.format("%s=%s&", key, value));
+                }
+                String queryStr = query.toString();
+                queryStr = queryStr.replaceAll("&$", "");
+                out.writeBytes(queryStr);
             }
 
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            // BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            InputStream in = con.getInputStream();
 
-            char[] buffer = new char[BUFFER_SIZE]; // or some other size,
-            int charsRead;
-            while ((charsRead = in.read(buffer, 0, BUFFER_SIZE)) != -1) {
-                page.append(buffer, 0, charsRead);
+            int readed;
+            //byte[] chunk = new byte[4096];
+            byte[] chunk = new byte[65536];
+            while ((readed = in.read(chunk)) > 0) {
+                baos.write(chunk, 0, readed);
             }
 
             in.close();
 
-            return page.toString();
+            Map<String, String> cookieMap = new HashMap<>();
+            byte[] pageData = baos.toByteArray();
+
+            return new String(pageData);
+
 
         } catch (IOException e) {
             LOG.warn(String.format("Exception in page loader: %s", e.toString()));
 
             //handle 403? access denied error
-            if(e.toString().contains("Server returned HTTP response code: 403 for URL")){
+            if (e.toString().contains("Server returned HTTP response code: 403 for URL")) {
 
             }
 
@@ -81,7 +101,7 @@ public class SimplePageLoader implements PageLoader {
                 throw new RuntimeException(e);
             }
 
-            return getPage(urlString, attempt + 1);
+            return getPage(urlString, data, headers, attempt + 1);
         } catch (Exception e) {
             LOG.warn(String.format("Exception in page loader: %s", e.toString()));
             LOG.warn(String.format("Failed to load item for url: %s. Exception: %s", urlString, e.toString()));

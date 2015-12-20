@@ -3,12 +3,14 @@ package carScraperServer.scrapeEngine;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Component;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import javax.annotation.PostConstruct;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.*;
+import java.util.Map;
 
 @Component
 public class TorPageLoader implements PageLoader {
@@ -34,6 +36,11 @@ public class TorPageLoader implements PageLoader {
     @Override
     public String getPage(String urlString) {
         return getPage(urlString, 0);
+    }
+
+    @Override
+    public String postPage(String urlString, Map<String, String> data, Map<String, String> headers) {
+        throw new NotImplementedException();
     }
 
     private String getPage(String urlString, int attempt) {

@@ -61,6 +61,32 @@ public class ScraperTest {
         //carsComScrapeService.execute()
     }
 
+
+    @Test
+    public void testCarsComScraper() throws InterruptedException {
+        UserSearchQuery userSearchQuery = new UserSearchQuery();
+        userSearchQuery.setMake("BMW");
+        userSearchQuery.setYear(2011);
+        userSearchQuery.setModel("X3");
+        userSearchQuery.setZipCode(92626);
+        AdditionalSearchParams additionalSearchParams = new AdditionalSearchParams(1000.0);
+        CarsComSearchProcessor carsComSearchProcessor = new CarsComSearchProcessor(10, userSearchQuery, additionalSearchParams, simplePageLoader);
+
+        carsComSearchProcessor.startScraping((processor) -> {
+            List<ResultItem> resultItemList = processor.getResultItemList();
+            System.out.println(String.format("Collected: %d", resultItemList.size()));
+            synchronized (lock) {
+                lock.notifyAll();
+                isFinished = true;
+            }
+        });
+        synchronized (lock) {
+            while (!isFinished) {
+                lock.wait();
+            }
+        }
+    }
+
     @Test
     public void testAutotraderScraper() throws InterruptedException {
         UserSearchQuery userSearchQuery = new UserSearchQuery();
@@ -88,6 +114,32 @@ public class ScraperTest {
     }
 
     @Test
+    public void testCargurus() throws InterruptedException {
+        UserSearchQuery userSearchQuery = new UserSearchQuery();
+        userSearchQuery.setMake("BMW");
+        userSearchQuery.setYear(2011);
+        userSearchQuery.setModel("X3");
+        userSearchQuery.setZipCode(92626);
+        userSearchQuery.setPrice(22000.0);
+        AdditionalSearchParams additionalSearchParams = new AdditionalSearchParams(2000.0);
+        CargurusSearchProcessor cargurusSearchProcessor = new CargurusSearchProcessor(10, userSearchQuery, additionalSearchParams, simplePageLoader);
+
+        cargurusSearchProcessor.startScraping((processor) -> {
+            List<ResultItem> resultItemList = processor.getResultItemList();
+            System.out.println(String.format("Collected: %d", resultItemList.size()));
+            synchronized (lock) {
+                lock.notifyAll();
+                isFinished = true;
+            }
+        });
+        synchronized (lock) {
+            while (!isFinished) {
+                lock.wait();
+            }
+        }
+    }
+
+    @Test
     public void testDataFind() {
         UserSearchQuery userSearchQuery = new UserSearchQuery();
         userSearchQuery.setMake("BMW");
@@ -96,6 +148,7 @@ public class ScraperTest {
         userSearchQuery.setZipCode(10006);
 
         JsonResult jsonResult = carsScrapeService.renderResponseFromDB(userSearchQuery);
+
         int a = 1;
     }
 

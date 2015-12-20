@@ -48,7 +48,9 @@ public class CarScraperController {
                                      @RequestParam Integer year,
                                      @RequestParam Long zipcode,
                                      @RequestParam(required = false) Double price,
-                                     @RequestParam(required = false) String postDate) {
+                                     @RequestParam(required = false) String postDate,
+                                     String sources) {
+
         UserSearchQuery userSearchQuery = new UserSearchQuery();
         userSearchQuery.setMake(make);
         userSearchQuery.setModel(model);
@@ -56,6 +58,17 @@ public class CarScraperController {
         userSearchQuery.setZipCode(zipcode);
         userSearchQuery.setPrice(price);
         userSearchQuery.setPostDate(postDate);
+
+        Set<String> sourceSet = new HashSet<>();
+        if (sources == null) {
+            sourceSet = carsScrapeService.getAvailableSouces();
+        } else {
+            for (String source : sources.split(",")) {
+                sourceSet.add(source);
+            }
+        }
+
+        userSearchQuery.setSourceSet(sourceSet);
 
         JsonResult result = carsScrapeService.execute(userSearchQuery);
         //Result res = new Result();

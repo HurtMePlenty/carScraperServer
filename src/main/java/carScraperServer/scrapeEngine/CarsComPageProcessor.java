@@ -83,6 +83,7 @@ public class CarsComPageProcessor {
                 resultItem.getImageUrls().add(imageUrl);
             }
 
+            resultItem.setSource("carscom");
             return resultItem;
         } catch (Exception e) {
             LOG.warn(String.format("Failed to load item with url %s \n Exception: %s", url, e.toString()));

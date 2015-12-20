@@ -1,12 +1,12 @@
 var data = "";
 
 
-var makeSelect = $("#j_id_ay-searchform-col-wrapper-col1-listingsSearch-makemodelSEVO-make1-selectOneMenu");
-var makeOptions = $("#j_id_ay-searchform-col-wrapper-col1-listingsSearch-makemodelSEVO-make1-selectOneMenu option");
+var makeSelect = $($(".select.maker-select-dropdown.btn-small")[0]);
+var makeOptions = makeSelect.find("option");
 
 var prevFirstOptValue = null;
 
-var processMake = function(index) {
+var processMake = function (index) {
     if (index === makeOptions.length - 1) {
         return;
     }
@@ -15,15 +15,15 @@ var processMake = function(index) {
 
     $(makeSelect).val(makeOptions[index].value);
 
-    setTimeout(function() {
+    setTimeout(function () {
         $(makeSelect).change();
         var waitForLoad;
-        waitForLoad = function() {
-            setTimeout(function() {
+        waitForLoad = function () {
+            setTimeout(function () {
                 console.log("waited");
-                var modelOpts = $("#j_id_ay-searchform-col-wrapper-col1-listingsSearch-makemodelSEVO-model1-selectOneMenu option");
+                var modelOpts = $(".select.model-select-dropdown.btn-small option");
                 var shouldWaitMore = false;
-                if(modelOpts.length > 1){
+                if (modelOpts.length > 1) {
                     console.log("checking");
                     var firstVal = modelOpts[1].value;
                     shouldWaitMore = prevFirstOptValue === firstVal;
@@ -34,12 +34,12 @@ var processMake = function(index) {
                     console.log("Waiting more");
                     waitForLoad();
                 } else {
-                    modelOpts.each(function(index, elem) {
+                    modelOpts.each(function (index, elem) {
                         data += 'modelsMap.put("' + elem.innerHTML.toLowerCase() + '", "' + elem.value + '");';
                         data += '\n';
                     });
 
-                    if(modelOpts.length > 1) {
+                    if (modelOpts.length > 1) {
                         prevFirstOptValue = modelOpts[1].value;
                     }
                     processMake(index + 1);
@@ -51,8 +51,22 @@ var processMake = function(index) {
         waitForLoad();
 
 
-
     }, 2000);
 };
 
 processMake(1);
+
+
+///get makes script
+
+var data = "";
+
+
+var makeSelect = $($(".select.maker-select-dropdown.btn-small")[0]);
+var makeOptions = makeSelect.find("option");
+
+for (var i = 0; i < makeOptions.length; i++) {
+    var elem = makeOptions[i];
+    data += 'makesMap.put("' + elem.innerHTML.toLowerCase() + '", "' + elem.value + '");';
+    data += '\n';
+}

@@ -67,6 +67,14 @@ public class CarsScrapeService {
 
     private boolean autotraderUseTor;
 
+    private Set<String> availableSources = new HashSet<>();
+
+    public CarsScrapeService() {
+        availableSources.add("carscom");
+        availableSources.add("autotradercom");
+        availableSources.add("carguruscom");
+    }
+
     public synchronized JsonResult execute(UserSearchQuery userSearchQuery) {
 
         String queryToken = userSearchQuery.getQueryToken();
@@ -89,15 +97,29 @@ public class CarsScrapeService {
 
         tasks.put(userSearchQuery, new ArrayList<>());
 
-        //prepare cars.com task
-        PageLoader pageLoader = carsComUseTor ? torPageLoader : simplePageLoader;
-        CarsComSearchProcessor carsComSearchProcessor = new CarsComSearchProcessor(maxThreads, userSearchQuery, additionalSearchParams, pageLoader);
-        tasks.get(userSearchQuery).add(carsComSearchProcessor);
+        Set<String> sources = userSearchQuery.getSourceSet();
 
-        //prepare autotrader.com task
-        pageLoader = autotraderUseTor ? torPageLoader : simplePageLoader;
-        AutotraderSearchProcessor autotraderSearchProcessor = new AutotraderSearchProcessor(maxThreads, userSearchQuery, additionalSearchParams, pageLoader);
-        tasks.get(userSearchQuery).add(autotraderSearchProcessor);
+        if (sources.contains("carscom")) {
+            //prepare cars.com task
+            PageLoader pageLoader = carsComUseTor ? torPageLoader : simplePageLoader;
+            CarsComSearchProcessor carsComSearchProcessor = new CarsComSearchProcessor(maxThreads, userSearchQuery, additionalSearchParams, pageLoader);
+            tasks.get(userSearchQuery).add(carsComSearchProcessor);
+        }
+
+        if (sources.contains("autotradercom")) {
+            //prepare autotrader.com task
+            PageLoader pageLoader = autotraderUseTor ? torPageLoader : simplePageLoader;
+            AutotraderSearchProcessor autotraderSearchProcessor = new AutotraderSearchProcessor(maxThreads, userSearchQuery, additionalSearchParams, pageLoader);
+            tasks.get(userSearchQuery).add(autotraderSearchProcessor);
+        }
+
+        if (sources.contains("carguruscom")) {
+            //prepare cargurus.com task
+            PageLoader pageLoader = autotraderUseTor ? torPageLoader : simplePageLoader;
+            CargurusSearchProcessor cargurusSearchProcessor = new CargurusSearchProcessor(maxThreads, userSearchQuery, additionalSearchParams, pageLoader);
+            tasks.get(userSearchQuery).add(cargurusSearchProcessor);
+        }
+
 
         if (parallelSources) {
             tasks.get(userSearchQuery).forEach(this::startExecuting);
@@ -106,6 +128,10 @@ public class CarsScrapeService {
         }
 
         return new JsonDataResult(new ArrayList<>(), false);
+    }
+
+    public Set<String> getAvailableSouces() {
+        return availableSources;
     }
 
     private synchronized void executeNext(UserSearchQuery userSearchQuery) {
@@ -200,6 +226,9 @@ public class CarsScrapeService {
     public JsonResult renderResponseFromDB(UserSearchQuery userSearchQuery) {
 
         QueryBuilder mainQuery = QueryBuilder.start();
+
+        mainQuery.and(QueryBuilder.start().put("source").in(userSearchQuery.getSourceSet()).get());
+
         if (userSearchQuery.getMake() != null) {
             mainQuery.and(QueryBuilder.start().put("make").is(userSearchQuery.getMake().toLowerCase()).get());
         }
