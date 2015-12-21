@@ -102,6 +102,12 @@ public class CarScraperController {
         return totalSet;
     }
 
+    @RequestMapping(value = "/showSources", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public Set<String> showSource() {
+        return carsScrapeService.getAvailableSouces();
+    }
+
    /* @RequestMapping(value = "", method = RequestMethod.GET)
     public String carsComScraper(ModelMap model) {
 
